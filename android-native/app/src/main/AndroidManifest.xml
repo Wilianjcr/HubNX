@@ -6,6 +6,8 @@
     <application
         android:theme="@android:style/Theme.Material.NoActionBar"
         android:label="HubNX"
+        android:icon="@drawable/hubnx_launcher"
+        android:roundIcon="@drawable/hubnx_launcher"
         android:usesCleartextTraffic="false"
         android:allowBackup="false">
         <activity android:name=".MainActivity" android:exported="true">
