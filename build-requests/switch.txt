@@ -1,0 +1,2 @@
+Build request 2 — 25/10/2026
+Build Chromium NX independent HubNX NRO after adding Chromium full browser and libavcodec-dev/libavutil-dev dependencies. Run workflow using latest main with custom icon and backup/Firebase UI.
