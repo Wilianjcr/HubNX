@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c111c">
+<meta name="description" content="Seus sites favoritos no Android e no Nintendo Switch.">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>HubNX — Meus sites</title>
+<style>
+:root{color-scheme:dark;--bg:#0c111c;--panel:#171f2e;--stroke:#34445c;--muted:#a5b5c9;--text:#f1f6ff;--accent:#6de6d8}
+*{box-sizing:border-box}body{background:radial-gradient(ellipse at 30% -10%,#1a3c4b,transparent 45%),var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,sans-serif;margin:0;min-height:100vh}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+main{width:min(1100px,calc(100% - 32px));margin:auto;padding:24px 0 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border-bottom:1px solid var(--stroke);padding-bottom:18px}
+.brand{display:flex;gap:12px;align-items:center}.logo{display:grid;place-items:center;width:52px;height:52px;border-radius:15px;background:linear-gradient(135deg,#31b4aa,#214f91);font-size:27px}.brand strong{display:block;font-size:24px;letter-spacing:-1px}.brand small{color:var(--muted)}
+.controls{display:flex;gap:9px;flex-wrap:wrap}.btn{background:var(--panel);border:1px solid var(--stroke);border-radius:12px;color:var(--text);padding:11px 15px;font-weight:650}.btn.primary{background:var(--accent);color:#082b31;border-color:var(--accent)}.btn:disabled{opacity:.6;cursor:wait}
+.hero{margin:40px 0 24px}.hero p:first-child{color:var(--accent);font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.1;letter-spacing:-2px;margin:12px 0}.hero p:last-child{color:var(--muted)}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:24px 0}.toolbar h2{font-size:23px;margin:0}#search{min-width:210px;max-width:100%;background:var(--panel);color:var(--text);border:1px solid var(--stroke);border-radius:12px;padding:12px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.card{background:linear-gradient(160deg,#263347,#131d2a);border:1px solid var(--stroke);border-radius:20px;min-height:192px;padding:18px;display:flex;flex-direction:column;justify-content:space-between}.symbol{display:grid;place-items:center;font-size:29px;font-weight:800;width:58px;height:58px;background:#243f52;border-radius:16px;color:var(--accent)}.card b{display:block;font-size:21px;overflow-wrap:anywhere}.card small{color:var(--muted);word-break:break-all}.card .open{background:none;text-align:left;color:inherit;border:0;padding:0;flex:1;display:flex;flex-direction:column;justify-content:space-between}.card .actions{display:flex;gap:7px;margin-top:12px}.card .actions button{background:#28384b;border:1px solid #455c72;color:white;padding:8px 10px;border-radius:9px}
+.note{background:#162638;border:1px solid var(--stroke);padding:13px 16px;border-radius:13px;color:#c6d6e7;margin:24px 0}.note.error{color:#ffd5d6;border-color:#804347}.note.success{color:#beffe8}.muted{color:var(--muted)}.empty{grid-column:1/-1;padding:34px;border:1px dashed var(--stroke);border-radius:16px;text-align:center;color:var(--muted)}
+dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;color:var(--text);width:min(460px,calc(100% - 32px));padding:27px}dialog::backdrop{background:#020812c9}dialog h2{margin:0 0 8px}dialog p{color:var(--muted);font-size:14px}label{display:block;margin:13px 0;color:#dae7f7;font-weight:650;font-size:14px}label input{display:block;width:100%;margin-top:7px;background:#0d1625;border:1px solid #52617a;border-radius:11px;padding:12px;color:white}.dialog-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:23px}#err,#authErr{color:#ffb8c2;min-height:1em}.update{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}.update a{color:var(--accent)}footer{border-top:1px solid var(--stroke);padding:20px 0;color:var(--muted);font-size:13px;margin-top:38px}
+@media(max-width:860px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{align-items:stretch;flex-direction:column}.card{min-height:160px}.card b{font-size:18px}.card small{font-size:11px}}@media(max-width:350px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main>
+<header><div class="brand"><span class="logo" aria-hidden="true">▶</span><span><strong>HubNX</strong><small>Android • Nintendo Switch</small></span></div><nav class="controls">
+<button class="btn" id="account" type="button">☁ Conta</button>
+<button class="btn" id="sync" type="button">↻ Sincronizar</button>
+<button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
+<div class="note" id="status" role="status">Favoritos armazenados neste dispositivo. Entre na mesma conta nos dois aparelhos para sincronizar.</div>
+<div class="note update" id="update"><span id="updateText">HubNX v0.2.0 • Verificação de atualização opcional.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
+<section class="hero"><p>Sua central de acesso</p><h1>O que vamos abrir hoje?</h1><p>Cadastre seus sites favoritos no celular e acesse no Switch. Alguns sites podem não reproduzir vídeos no console.</p></section>
+<div class="toolbar"><h2>Minha biblioteca <span class="muted" id="count"></span></h2><input id="search" type="search" placeholder="Pesquisar sites" aria-label="Pesquisar sites"></div>
+<div class="grid" id="cards"></div>
+<footer>HubNX • Favoritos por dispositivo e sincronização opcional por Firebase. Netflix é um atalho: reprodução sujeita ao DRM e à compatibilidade do navegador.</footer>
+</main>
+<dialog id="siteDialog"><form id="siteForm"><h2 id="siteTitle">Adicionar site</h2><p>Use um endereço HTTP ou HTTPS completo.</p>
+<label>Nome<input id="name" maxlength="60" required autocomplete="off" placeholder="Meu site"></label>
+<label>Endereço<input id="url" maxlength="600" required autocomplete="off" inputmode="url" placeholder="https://exemplo.com"></label>
+<p id="err" role="alert"></p>
+<div class="dialog-actions"><button class="btn" type="button" id="cancel">Cancelar</button><button class="btn primary" type="submit">Salvar</button></div></form></dialog>
+<dialog id="authDialog"><form id="authForm"><h2>Conta HubNX</h2><p>Use o mesmo e-mail e senha nos dois aparelhos. A sincronização exige Firebase configurado.</p>
+<label>E-mail<input id="email" type="email" required autocomplete="username"></label>
+<label>Senha<input id="password" type="password" minlength="6" required autocomplete="current-password"></label>
+<p id="authErr" role="alert"></p><div class="dialog-actions">
+<button id="logout" class="btn" type="button">Sair</button><button id="authCancel" class="btn" type="button">Fechar</button><button id="register" class="btn" type="button">Criar conta</button><button class="btn primary" type="submit">Entrar</button></div></form></dialog>
+<script src="./firebase-config.js"></script>
+<script>
+(function(){
+'use strict';
+const VERSION='0.2.0', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
+const $=id=>document.getElementById(id);
+const cloud=window.HUBNX_FIREBASE||{};
+const cloudReady=Boolean(cloud.apiKey&&cloud.projectId&&!String(cloud.apiKey).startsWith('INSIRA_'));
+let sites=[],editing=null,session=null,busy=false,dirty=localStorage.getItem(DIRTY)==='1';
+const initial=[{id:'cinevs',name:'CineVS',url:'https://webcinevs2.com/'},{id:'netflix',name:'Netflix',url:'https://www.netflix.com/br/'}];
+function message(s,kind){$('status').textContent=s;$('status').className='note'+(kind?' '+kind:'');}
+function validUrl(s){try{let u=new URL(s);return ['https:','http:'].includes(u.protocol)&&!!u.hostname&& !u.username && !u.password;}catch(e){return false;}}
+function read(){try{const x=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(x))return x.filter(z=>z&&typeof z.id==='string'&&typeof z.name==='string'&&validUrl(z.url)).slice(0,1000);}catch(e){}return initial.map(x=>Object.assign({},x));}
+function save(mark){localStorage.setItem(KEY,JSON.stringify(sites));if(mark){dirty=true;localStorage.setItem(DIRTY,'1'); if(session)window.setTimeout(sync,700);}render();}
+function render(){let q=$('search').value.trim().toLowerCase();$('cards').replaceChildren();$('count').textContent='('+sites.length+')';let found=sites.filter(s=>s.name.toLowerCase().includes(q)||s.url.toLowerCase().includes(q));if(!found.length){let t=document.createElement('div');t.className='empty';t.textContent='Nenhum site encontrado. Cadastre um novo favorito.';$('cards').append(t);return;}
+for(const s of found){let card=document.createElement('article');card.className='card';let open=document.createElement('button');open.className='open';open.type='button';open.setAttribute('aria-label','Abrir '+s.name);let sym=document.createElement('span');sym.className='symbol';sym.textContent=(s.name.trim()[0]||'▶').toUpperCase();let info=document.createElement('span');let name=document.createElement('b');name.textContent=s.name;let address=document.createElement('small');address.textContent=s.url;info.append(name,address);open.append(sym,info);open.onclick=()=>{window.location.assign(s.url);};let actions=document.createElement('div');actions.className='actions';let edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.onclick=()=>showSite(s);let remove=document.createElement('button');remove.type='button';remove.textContent='Excluir';remove.onclick=()=>{if(confirm('Excluir '+s.name+'?')){sites=sites.filter(x=>x.id!==s.id);save(true);}};actions.append(edit,remove);card.append(open,actions);$('cards').append(card);}}
+function showSite(s){editing=s?s.id:null;$('siteTitle').textContent=s?'Editar site':'Adicionar site';$('name').value=s?s.name:'';$('url').value=s?s.url:'';$('err').textContent='';$('siteDialog').showModal();}
+$('add').onclick=()=>showSite(null);$('cancel').onclick=()=>$('siteDialog').close();$('search').oninput=render;
+$('siteForm').onsubmit=e=>{e.preventDefault();let name=$('name').value.trim(),url=$('url').value.trim();if(!name||!validUrl(url)){$('err').textContent='Informe nome e URL HTTP/HTTPS válida, sem credenciais.';return;}if(editing){sites=sites.map(x=>x.id===editing?{id:x.id,name,url}:x);}else{sites.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),name,url});}save(true);$('siteDialog').close();};
+function apiError(e){let x=e&&e.error&&e.error.message;return x||e.message||'Falha de conexão.';}
+async function request(url,options){let response=await fetch(url,options);let data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(apiError(data));return data;}
+function authEndpoint(action){return 'https://identitytoolkit.googleapis.com/v1/accounts:'+action+'?key='+encodeURIComponent(cloud.apiKey);}
+async function authenticate(register){
+if(!cloudReady)throw new Error('Configure Firebase para ativar a conta.');
+const data=await request(authEndpoint(register?'signUp':'signInWithPassword'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value,returnSecureToken:true})});
+session={uid:data.localId,email:data.email,idToken:data.idToken,refreshToken:data.refreshToken,expires:Date.now()+Number(data.expiresIn||3600)*1000};remember();$('authDialog').close();$('password').value='';message('Conectado como '+session.email+'. Sincronizando…','success');await sync();}
+function remember(){if(session)localStorage.setItem(SESSION,JSON.stringify({uid:session.uid,email:session.email,refreshToken:session.refreshToken}));}
+async function token(){
+if(!session)throw new Error('Entre na sua conta.');
+if(session.idToken&&session.expires>Date.now()+120000)return session.idToken;
+const x=await request('https://securetoken.googleapis.com/v1/token?key='+encodeURIComponent(cloud.apiKey),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'refresh_token',refresh_token:session.refreshToken}).toString()});
+session.idToken=x.id_token;session.refreshToken=x.refresh_token;session.uid=x.user_id;session.expires=Date.now()+Number(x.expires_in||3600)*1000;remember();return session.idToken;}
+function docUrl(){return 'https://firestore.googleapis.com/v1/projects/'+encodeURIComponent(cloud.projectId)+'/databases/(default)/documents/users/'+encodeURIComponent(session.uid)+'/hubnx/data';}
+async function fromCloud(){let t=await token();let resp=await fetch(docUrl(),{headers:{Authorization:'Bearer '+t},cache:'no-store'});if(resp.status===404)return null;let x=await resp.json();if(!resp.ok)throw new Error(apiError(x));try{let data=JSON.parse(x.fields.sitesJson.stringValue);if(!Array.isArray(data))return null;return data.filter(v=>v&&typeof v.id==='string'&&typeof v.name==='string'&&validUrl(v.url)).slice(0,1000);}catch(e){return null;}}
+async function toCloud(){let snapshot=JSON.stringify(sites),t=await token();await request(docUrl(),{method:'PATCH',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({fields:{sitesJson:{stringValue:snapshot},updatedAt:{timestampValue:new Date().toISOString()}}})});if(snapshot===JSON.stringify(sites)){dirty=false;localStorage.removeItem(DIRTY);}}
+async function sync(){if(!session){message('Entre na conta HubNX para sincronizar. Seus links locais continuam salvos.');return;}if(busy)return;busy=true;$('sync').disabled=true;
+try{if(dirty){await toCloud();}else{let remote=await fromCloud();if(remote!==null){sites=remote;save(false);}else{await toCloud();}}message('✓ Sincronizado com a nuvem. '+sites.length+' sites disponíveis.','success');}
+catch(e){message('Falha ao sincronizar: '+e.message,'error');}finally{busy=false;$('sync').disabled=false;}}
+$('sync').onclick=sync;
+$('account').onclick=()=>{$('authErr').textContent='';$('authDialog').showModal();};
+$('authCancel').onclick=()=>$('authDialog').close();
+$('authForm').onsubmit=e=>{e.preventDefault();authenticate(false).catch(x=>$('authErr').textContent=x.message);};
+$('register').onclick=()=>{if(!$('authForm').reportValidity())return;authenticate(true).catch(x=>$('authErr').textContent=x.message);};
+$('logout').onclick=()=>{session=null;localStorage.removeItem(SESSION);$('authDialog').close();message('Conta desconectada. Favoritos locais preservados.');};
+async function restore(){if(!cloudReady)return;try{let x=JSON.parse(localStorage.getItem(SESSION)||'null');if(!x||!x.uid||!x.refreshToken)return;session={uid:x.uid,email:x.email,refreshToken:x.refreshToken};await token();await sync();}catch(e){session=null;localStorage.removeItem(SESSION);message('Sessão expirada; entre na conta novamente.','error');}}
+const manifest='https://raw.githubusercontent.com/Wilianjcr/HubNX/main/version.json';
+$('updateBtn').onclick=async()=>{
+$('updateBtn').disabled=true;
+try{let r=await fetch(manifest+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('offline/private');let x=await r.json();let regex=/^\d+\.\d+\.\d+$/;if(!regex.test(x.version))throw Error('invalid');
+const newer=(a,b)=>{let aa=a.split('.').map(Number),bb=b.split('.').map(Number);for(let i=0;i<3;i++){if(aa[i]!==bb[i])return aa[i]>bb[i];}return false;};
+$('updateText').textContent=newer(x.version,VERSION)?'Nova versão '+x.version+' disponível. Consulte Releases no GitHub.':'Versão instalada '+VERSION+' • Nenhuma atualização nova.';
+}catch(e){$('updateText').textContent='A consulta pública não funciona enquanto o repositório estiver privado. Sem alterações no aplicativo.';}finally{$('updateBtn').disabled=false;}
+};
+sites=read();render();restore();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session)sync();});
+setInterval(()=>{if(session&&!document.hidden)sync();},60000);
+if('serviceWorker' in navigator && location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
