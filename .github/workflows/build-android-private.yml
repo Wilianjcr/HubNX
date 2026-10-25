@@ -1,4 +1,4 @@
-name: HubNX Android APK privado
+name: HubNX Android APK de teste
 on:
   push:
     branches: [main]
@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Obter o código privado
+      - name: Obter o código do HubNX
         uses: actions/checkout@v4
       - name: Conferir sintaxe de scripts web
         run: |
@@ -46,7 +46,7 @@ jobs:
       - name: Compilar APK debug
         working-directory: android-native
         run: gradle --no-daemon :app:assembleDebug
-      - name: Guardar APK apenas no GitHub privado
+      - name: Guardar APK debug como artifact temporário
         uses: actions/upload-artifact@v4
         with:
           name: HubNX-Android-debug
