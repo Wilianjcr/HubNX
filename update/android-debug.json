@@ -1,8 +1,8 @@
 {
   "channel": "debug",
-  "version": "0.2.7",
-  "run_id": 40237335001,
-  "run_url": "https://github.com/Wilianjcr/HubNX/actions/runs/40237335001",
-  "source_sha": "d5b9375268a5a5fd03ef4f7cc9cf8e636aff1281",
+  "version": "0.2.8",
+  "run_id": 40237433627,
+  "run_url": "https://github.com/Wilianjcr/HubNX/actions/runs/40237433627",
+  "source_sha": "4ee0f70909c6f71b689e10b60997a66812b49c71",
   "note": "APK de teste, assinatura não estável. Faça backup antes de instalar."
 }
