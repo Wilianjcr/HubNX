@@ -24,7 +24,7 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 </style>
 </head>
 <body><main>
-<header><div class="brand"><span class="logo" aria-hidden="true">▶</span><span><strong>HubNX</strong><small>Android • Nintendo Switch</small></span></div><nav class="controls">
+<header><div class="brand"><span class="logo" aria-hidden="true"><img src="./icon.svg" alt="" style="width:100%;height:100%;border-radius:15px"></span><span><strong>HubNX</strong><small>Android • Nintendo Switch</small></span></div><nav class="controls">
 <button class="btn" id="account" type="button">☁ Conta</button>
 <button class="btn" id="sync" type="button">↻ Sincronizar</button>
 <button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
@@ -44,15 +44,26 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 <label>E-mail<input id="email" type="email" required autocomplete="username"></label>
 <label>Senha<input id="password" type="password" minlength="6" required autocomplete="current-password"></label>
 <p id="authErr" role="alert"></p><div class="dialog-actions">
-<button id="logout" class="btn" type="button">Sair</button><button id="authCancel" class="btn" type="button">Fechar</button><button id="register" class="btn" type="button">Criar conta</button><button class="btn primary" type="submit">Entrar</button></div></form></dialog>
+<button id="setupFirebase" class="btn" type="button">⚙ Configurar sincronização</button><button id="logout" class="btn" type="button">Sair</button><button id="authCancel" class="btn" type="button">Fechar</button><button id="register" class="btn" type="button">Criar conta</button><button class="btn primary" type="submit">Entrar</button></div></form></dialog>
+<dialog id="firebaseDialog"><form id="firebaseForm"><h2>Ativar Conta HubNX</h2>
+<p>Para criar contas e sincronizar favoritos, configure um projeto no <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" style="color:#6de6d8">Firebase Console</a>. Ative Authentication (E-mail/Senha), Firestore e as regras de acesso por usuário descritas no GitHub.</p>
+<label>Firebase API Key (Web)<input id="fbKey" required autocomplete="off" maxlength="300" placeholder="AIza..."></label>
+<label>Project ID<input id="fbProject" required autocomplete="off" maxlength="120" placeholder="meu-hubnx-12345"></label>
+<p>Esses dois identificadores são configurações públicas de aplicativo web, não senhas de administrador. A configuração ficará salva só neste dispositivo.</p>
+<p id="firebaseErr" role="alert"></p>
+<div class="dialog-actions"><button class="btn" id="firebaseCancel" type="button">Cancelar</button><button class="btn primary" type="submit">Salvar configuração</button></div>
+</form></dialog>
 <script src="./firebase-config.js"></script>
 <script>
 (function(){
 'use strict';
 const VERSION='0.2.3', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
 const $=id=>document.getElementById(id);
-const cloud=window.HUBNX_FIREBASE||{};
-const cloudReady=Boolean(cloud.apiKey&&cloud.projectId&&!String(cloud.apiKey).startsWith('INSIRA_'));
+function loadCloud(){try {const local=JSON.parse(localStorage.getItem('hubnx.firebase.web.v1')||'null');
+return local&&local.apiKey&&local.projectId ? local : (window.HUBNX_FIREBASE||{});
+}catch(e){return window.HUBNX_FIREBASE||{};}}
+let cloud=loadCloud();
+const cloudConfigured=()=>Boolean(cloud.apiKey&&cloud.projectId&&!String(cloud.apiKey).startsWith('INSIRA_'));
 let sites=[],editing=null,session=null,busy=false,dirty=localStorage.getItem(DIRTY)==='1';
 const initial=[{id:'cinevs',name:'CineVS',url:'https://webcinevs2.com/'},{id:'netflix',name:'Netflix',url:'https://www.netflix.com/br/'}];
 function message(s,kind){$('status').textContent=s;$('status').className='note'+(kind?' '+kind:'');}
@@ -68,7 +79,7 @@ function apiError(e){let x=e&&e.error&&e.error.message;return x||e.message||'Fal
 async function request(url,options){let response=await fetch(url,options);let data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(apiError(data));return data;}
 function authEndpoint(action){return 'https://identitytoolkit.googleapis.com/v1/accounts:'+action+'?key='+encodeURIComponent(cloud.apiKey);}
 async function authenticate(register){
-if(!cloudReady)throw new Error('Configure Firebase para ativar a conta.');
+if(!cloudConfigured())throw new Error('Toque em Configurar sincronização, cadastre seu projeto Firebase e salve a API Key Web e Project ID.');
 const data=await request(authEndpoint(register?'signUp':'signInWithPassword'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value,returnSecureToken:true})});
 session={uid:data.localId,email:data.email,idToken:data.idToken,refreshToken:data.refreshToken,expires:Date.now()+Number(data.expiresIn||3600)*1000};remember();$('authDialog').close();$('password').value='';message('Conectado como '+session.email+'. Sincronizando…','success');await sync();}
 function remember(){if(session)localStorage.setItem(SESSION,JSON.stringify({uid:session.uid,email:session.email,refreshToken:session.refreshToken}));}
@@ -84,12 +95,39 @@ async function sync(){if(!session){message('Entre na conta HubNX para sincroniza
 try{if(dirty){await toCloud();}else{let remote=await fromCloud();if(remote!==null){sites=remote;save(false);}else{await toCloud();}}message('✓ Sincronizado com a nuvem. '+sites.length+' sites disponíveis.','success');}
 catch(e){message('Falha ao sincronizar: '+e.message,'error');}finally{busy=false;$('sync').disabled=false;}}
 $('sync').onclick=sync;
-$('account').onclick=()=>{$('authErr').textContent='';$('authDialog').showModal();};
+$('account').onclick=()=>{
+ $('authErr').textContent='';
+ $('authDialog').showModal();
+ if(!cloudConfigured()){
+   $('authErr').textContent='A Conta HubNX ainda não foi configurada neste dispositivo. Use Configurar sincronização.';
+ }
+};
+$('setupFirebase').onclick=()=>{
+ $('authDialog').close();
+ $('fbKey').value=cloudConfigured()?cloud.apiKey:'';
+ $('fbProject').value=cloudConfigured()?cloud.projectId:'';
+ $('firebaseErr').textContent='';
+ $('firebaseDialog').showModal();
+};
+$('firebaseCancel').onclick=()=>{$('firebaseDialog').close();$('authDialog').showModal();};
+$('firebaseForm').onsubmit=e=>{
+ e.preventDefault();
+ const apiKey=$('fbKey').value.trim(),projectId=$('fbProject').value.trim();
+ if(!/^AIza[A-Za-z0-9_-]{15,}$/.test(apiKey) || !/^[a-z][a-z0-9-]{3,100}$/.test(projectId)){
+   $('firebaseErr').textContent='Confira a API Key Web (começa com AIza) e o Project ID no Firebase Console.';return;
+ }
+ cloud={apiKey,projectId};
+ localStorage.setItem('hubnx.firebase.web.v1',JSON.stringify(cloud));
+ session=null;localStorage.removeItem(SESSION);
+ $('firebaseDialog').close();$('authDialog').showModal();
+ $('authErr').textContent='';
+ message('Configuração salva. Agora crie uma conta ou faça login no HubNX.','success');
+};
 $('authCancel').onclick=()=>$('authDialog').close();
 $('authForm').onsubmit=e=>{e.preventDefault();authenticate(false).catch(x=>$('authErr').textContent=x.message);};
 $('register').onclick=()=>{if(!$('authForm').reportValidity())return;authenticate(true).catch(x=>$('authErr').textContent=x.message);};
 $('logout').onclick=()=>{session=null;localStorage.removeItem(SESSION);$('authDialog').close();message('Conta desconectada. Favoritos locais preservados.');};
-async function restore(){if(!cloudReady)return;try{let x=JSON.parse(localStorage.getItem(SESSION)||'null');if(!x||!x.uid||!x.refreshToken)return;session={uid:x.uid,email:x.email,refreshToken:x.refreshToken};await token();await sync();}catch(e){session=null;localStorage.removeItem(SESSION);message('Sessão expirada; entre na conta novamente.','error');}}
+async function restore(){if(!cloudConfigured())return;try{let x=JSON.parse(localStorage.getItem(SESSION)||'null');if(!x||!x.uid||!x.refreshToken)return;session={uid:x.uid,email:x.email,refreshToken:x.refreshToken};await token();await sync();}catch(e){session=null;localStorage.removeItem(SESSION);message('Sessão expirada; entre na conta novamente.','error');}}
 const releaseApi='https://api.github.com/repos/Wilianjcr/HubNX/releases/latest';
 let releaseSeen=null;
 function newerVersion(a,b){
