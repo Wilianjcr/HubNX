@@ -37,3 +37,7 @@ Limitações: o upstream é experimental, pode travar; vídeos e streaming podem
 
 ## Conta e favoritos
 O cadastro local existe. A opção **Conta > Configurar sincronização** permite informar o mesmo Firebase Web API Key e Project ID do Android sem recompilar. É necessário configurar Firebase Authentication e Firestore corretamente antes de entrar. A compatibilidade das chamadas REST de origem `file:` no Chromium NX exige teste físico.
+
+## Formato de tela no Switch
+
+O botão **▣ Tela: Ampla/Compacta** alterna o layout da biblioteca entre uma grade horizontal e uma grade mais estreita. O Nintendo Switch continua fisicamente em paisagem; o botão não gira o display do console. A escolha fica no armazenamento local do perfil do Chromium.
