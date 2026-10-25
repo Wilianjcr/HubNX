@@ -28,6 +28,7 @@ public class MainActivity extends Activity {
     private static final int PANEL = Color.rgb(24, 36, 51);
     private static final int TEXT = Color.rgb(238, 247, 255);
 
+    private UpdateChecker updater;
     private WebView library;
     private WebView browser;
     private WebViewAssetLoader assetLoader;
@@ -46,6 +47,7 @@ public class MainActivity extends Activity {
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
 
+        updater = new UpdateChecker(this);
         root = new FrameLayout(this);
         root.setBackgroundColor(BG);
         library = new WebView(this);
@@ -57,6 +59,11 @@ public class MainActivity extends Activity {
 
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                if ("hubnx".equalsIgnoreCase(uri.getScheme()) &&
+                    "updates".equalsIgnoreCase(uri.getHost())) {
+                    updater.check(true);
+                    return true;
+                }
                 if (isLocalAsset(uri)) return false;
                 if (isWeb(uri)) openSite(uri.toString());
                 else toast("Endereço não suportado no HubNX");
@@ -164,6 +171,7 @@ public class MainActivity extends Activity {
         browserShell.setVisibility(View.GONE);
         setContentView(root);
         library.loadUrl(HOME);
+        updater.check(false);
     }
 
     private void configureWebView(WebView view) {
@@ -264,6 +272,7 @@ public class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (fullScreenView != null) exitFullScreen();
+        if (updater != null) updater.release();
         if (library != null) { library.destroy(); library = null; }
         if (browser != null) { browser.destroy(); browser = null; }
         super.onDestroy();
