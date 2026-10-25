@@ -14,4 +14,4 @@ O APK é assinado com chave padrão de **debug**, não está pronto para distrib
 
 ## Observações
 
-Ao abrir um site da lista no Android, ele é encaminhado ao navegador padrão. O HubNX continua responsável pelo cadastro, pesquisa e sincronização. Login/sincronização com Firebase só funcionam depois da configuração de `android/firebase-config.js` e `firebase/firestore.rules`.
+Ao abrir um site da lista no Android, ele é carregado no navegador WebView **interno** ao HubNX, sem iniciar Chrome. A barra possui Início, Voltar, Avançar, Atualizar, endereço e Ir. Vídeo em tela cheia é solicitado ao player do site quando suportado. Alguns sites (especialmente Netflix) podem bloquear autenticação ou reprodução em WebView por requisitos de DRM. Login/sincronização com Firebase só funcionam depois da configuração de `android/firebase-config.js` e `firebase/firestore.rules`.
