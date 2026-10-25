@@ -1,4 +1,4 @@
-# HubNX Android 0.2.2
+# HubNX Android 0.2.6
 
 O HubNX Android incorpora uma interface web local ao APK e abre os sites em um navegador WebView interno separado, com barra de endereço, voltar, avançar, atualizar, voltar à biblioteca e vídeos em tela cheia quando suportados.
 
@@ -23,3 +23,7 @@ A sincronização depende de configurar um projeto Firebase e aplicar regras pri
 - Sites com DRM podem bloquear vídeo e login em WebView, especialmente Netflix.
 - Sites com pop-ups, downloads especiais ou autenticação externa podem requerer ajustes.
 - O projeto Switch ainda não está instalado e necessita compilação.
+
+## Orientação da tela
+
+O controle **⤾** está disponível no navegador integrado e **⤾ Tela** na biblioteca. Alterne entre **Auto**, **Retrato** e **Paisagem**. A orientação escolhida fica em SharedPreferences, e a atividade usa configChanges para adaptar o conteúdo sem apagar a navegação. Funcionalidade compilada no código, sujeita a teste no aparelho real.
