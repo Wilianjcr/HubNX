@@ -25,21 +25,106 @@ body.hubnx-compact main{width:min(560px,calc(100% - 30px));}
 body.hubnx-compact .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 body.hubnx-compact .toolbar{align-items:stretch;flex-direction:column}
 body.hubnx-compact .hero h1{font-size:32px;letter-spacing:-1px}
+
+/* HubNX UI v0.3 — inspired by the approved dark-blue reference; CSS and DOM, not a static mockup. */
+:root{--bg:#061023;--panel:#0d1b31;--stroke:#1d3a5c;--muted:#8da8c9;--text:#f6f9ff;--accent:#169cff}
+body{background:radial-gradient(circle at 50% -170px,#123e70 0%,#061327 45%,#030914 100%) fixed;color:var(--text)}
+main{width:min(1160px,calc(100% - 24px));padding:20px 0 90px}
+header.app-top{display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;padding:0 0 18px}
+.brand .logo{width:46px;height:46px;border:1px solid #2d7fd4;border-radius:13px;background:#060f1d;box-shadow:0 0 20px #0c85ee22}
+.brand strong{font-size:23px;letter-spacing:-.7px}.brand strong span{color:#2ab7ff}.brand small{font-size:11px;color:#a8bad1}
+.top-actions{display:flex;align-items:center;gap:9px}
+.top-icon{display:inline-flex;align-items:center;justify-content:center;border:1px solid #285786;color:#e5f4ff;background:#10233c;border-radius:13px;min-width:43px;height:43px;font-size:24px}
+.top-icon.primary{background:#1466cd;border-color:#2389f8}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.2em;font-weight:750;color:#59b9fa;margin:8px 0 3px}
+.hero{margin:0 0 18px}.hero h1{font-size:clamp(25px,3.4vw,37px);letter-spacing:-1.25px;margin:2px 0 7px}.hero h1 span{color:#3eb4ff}.hero p:last-child{font-size:13px;color:#9bb2d1;margin:0}
+.search-shell{position:relative;margin:18px 0 22px}.search-shell:before{content:'⌕';position:absolute;left:14px;top:7px;font-size:29px;color:#83b7de;pointer-events:none}
+#search{width:100%;min-width:0;max-width:none;padding:14px 16px 14px 47px;border:1px solid #315276;background:#152943;border-radius:16px;color:#f6faff;box-shadow:inset 0 1px 2px #0003}
+#search:focus{outline:2px solid #0d90ee}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:15px 0 12px}
+.section-heading h2{font-size:17px;letter-spacing:-.3px;margin:0}.section-heading .muted{font-size:13px}
+.section-subtext{font-size:12px;color:#789aba}
+.grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.card{min-height:147px;padding:12px;border:1px solid #233f60;border-radius:16px;background:linear-gradient(150deg,#152b49,#09172a);box-shadow:0 9px 20px #0003}
+.card .open{align-items:center;text-align:center;gap:12px;justify-content:flex-start}
+.card .symbol{margin:auto;width:56px;height:56px;border:1px solid #2d5178;border-radius:15px;background:#152c4c;font-size:30px;color:#65c0ff;display:grid;place-items:center}
+.card .symbol.netflix{color:#e52335;background:#1d1324;border-color:#42253e;font-family:Arial,sans-serif}
+.card .symbol.youtube{color:#fff;background:#e32635;border-color:#df344b;font-size:26px}
+.card .symbol.disney{color:#c8daff;background:#112354}
+.card .symbol.prime{color:#73d8ff;background:#103750}
+.card .symbol.cinevs{color:#ff4c6e;background:#411d32}
+.card .open b{font-size:14px;letter-spacing:-.1px;line-height:1.25;overflow-wrap:anywhere}
+.card .open small{display:none}
+.card .actions{margin-top:6px;gap:5px;justify-content:center}
+.card .actions button{padding:5px 7px;font-size:11px;background:transparent;border:1px solid #254768;color:#b7cbea}
+.card .actions .pin{font-size:17px;line-height:1;color:#f6ce5b}.card .actions .pin[aria-pressed="false"]{color:#839bb8}
+.saved-panel{margin-top:25px;border:1px solid #284768;background:linear-gradient(160deg,#0d2138,#0b1729);border-radius:19px;padding:16px}
+.favorite-list{display:flex;flex-direction:column}
+.favorite-item{display:flex;align-items:center;gap:11px;border-bottom:1px solid #223855;padding:10px 0}
+.favorite-item:last-child{border-bottom:0}
+.favorite-item .mini-icon{width:41px;height:41px;min-width:41px;border:1px solid #315278;border-radius:11px;background:#122641;color:#43b5ff;display:grid;place-items:center;font-weight:800;font-size:20px}
+.favorite-item .mini-icon.netflix{color:#e72642}.favorite-item .mini-icon.youtube{background:#d72138;color:white}
+.favorite-item .mini-icon.cinevs{color:#ff4869}
+.favorite-item .mini-icon.disney{color:#aacbff}
+.favorite-item .mini-icon.prime{color:#8ae1ff}
+.favorite-open{display:flex;flex-direction:column;gap:2px;align-items:flex-start;min-width:0;text-align:left;background:transparent;color:#f2f6ff;border:0;padding:0;flex:1}
+.favorite-open b{font-size:14px}.favorite-open small{max-width:100%;font-size:11px;color:#829fbe;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.favorite-star{color:#f4cb65;background:transparent;border:0;font-size:22px;padding:8px}
+.favorite-empty{padding:15px 0;color:#97abc8;font-size:13px}
+.note{font-size:12px;padding:10px 13px;margin:13px 0;background:#0d2137;border-color:#254968;border-radius:13px}
+.note.update{border-color:#205789}
+.update .btn{font-size:12px;padding:7px 10px;border-radius:9px}
+.settings-panel{margin-top:18px;border-radius:16px;border:1px solid #2e5783;padding:15px;background:#0c1d34}
+.settings-panel[hidden]{display:none}
+.settings-panel h2{font-size:17px;margin:0 0 12px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.controls .btn{padding:10px 12px;font-size:13px}
+.bottom-nav{position:sticky;bottom:8px;z-index:4;display:flex;align-items:center;justify-content:space-around;gap:4px;background:#07172aef;backdrop-filter:blur(16px);border:1px solid #25507e;border-radius:17px;box-shadow:0 12px 36px #0009;margin:24px auto 0;padding:7px 5px;max-width:650px}
+.bottom-nav button{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;flex:1;color:#bad0e7;background:transparent;border:0;border-radius:11px;padding:7px 2px;font-size:10px}
+.bottom-nav button:focus-visible{outline:2px solid #4cc6ff}
+.bottom-nav button.active,.bottom-nav button[aria-current="page"]{background:#123456;color:#46b4ff}
+.bottom-nav .nav-glyph{font-size:22px;line-height:1.2}
+footer{margin-top:25px;font-size:11px;text-align:center;border-color:#23415e;color:#819bb8}
+dialog{background:#0e2138;border-color:#386493}
+label input{background:#071526}
+@media(max-width:860px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:600px){main{padding-top:15px}.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.card{min-height:136px;padding:9px;border-radius:13px}.card .symbol{width:47px;height:47px;font-size:26px}.card .open b{font-size:12px}.card .actions button{font-size:10px;padding:4px}.saved-panel{padding:12px}.hero h1{font-size:27px}.brand strong{font-size:21px}}
+@media(max-width:355px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+body.hubnx-compact main{width:min(560px,calc(100% - 24px))}
+body.hubnx-compact .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+
 </style>
 </head>
 <body><main>
-<header><div class="brand"><span class="logo" aria-hidden="true"><img src="./icon.svg" alt="" style="width:100%;height:100%;border-radius:15px"></span><span><strong>HubNX</strong><small>Android • Nintendo Switch</small></span></div><nav class="controls">
-<button class="btn" id="account" type="button">☁ Conta</button>
-<button class="btn" id="sync" type="button">↻ Sincronizar</button>
-<button class="btn" id="orientation" type="button" aria-label="Alternar formato do layout no Switch">▣ Tela: Ampla</button>
-<button class="btn" id="backup" type="button">⇄ Backup</button>
-<button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
-<div class="note" id="status" role="status">Favoritos armazenados neste dispositivo. Entre na mesma conta nos dois aparelhos para sincronizar.</div>
-<div class="note update" id="update"><span id="updateText">HubNX Switch experimental v0.2.0 • Atualizações verificadas ao abrir.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
-<section class="hero"><p>Sua central de acesso</p><h1>O que vamos abrir hoje?</h1><p>Cadastre seus sites favoritos no celular e acesse no Switch. Alguns sites podem não reproduzir vídeos no console.</p></section>
-<div class="toolbar"><h2>Minha biblioteca <span class="muted" id="count"></span></h2><input id="search" type="search" placeholder="Pesquisar sites" aria-label="Pesquisar sites"></div>
-<div class="grid" id="cards"></div>
-<footer>HubNX • Favoritos por dispositivo e sincronização opcional por Firebase. Netflix é um atalho: reprodução sujeita ao DRM e à compatibilidade do navegador.</footer>
+<header class="app-top">
+  <div class="brand"><span class="logo" aria-hidden="true"><img src="./icon.svg" alt="" style="width:100%;height:100%;border-radius:13px"></span><span><strong>Hub<span>NX</span></strong><small>Nintendo Switch · Seus sites em um só lugar</small></span></div>
+  <div class="top-actions"><button class="top-icon" id="account" type="button" aria-label="Conta HubNX" title="Conta HubNX">♙</button><button class="top-icon primary" id="add" type="button" aria-label="Adicionar site" title="Adicionar site">＋</button></div>
+</header>
+<section class="hero"><div class="eyebrow">SUA CENTRAL DE ACESSO</div><h1>Minha <span>biblioteca</span></h1><p>Seus sites favoritos, organizados para abrir no próprio HubNX.</p></section>
+<div class="search-shell"><input id="search" type="search" placeholder="Pesquisar ou digitar para encontrar..." aria-label="Pesquisar sites cadastrados"></div>
+<section aria-labelledby="libraryTitle"><div class="section-heading"><h2 id="libraryTitle">Acesso rápido <span class="muted" id="count"></span></h2><span class="section-subtext">Toque para abrir</span></div><div class="grid" id="cards"></div></section>
+<section class="saved-panel" id="favoritesSection" aria-labelledby="favoriteTitle">
+  <div class="section-heading"><h2 id="favoriteTitle">★ Favoritos</h2><span class="section-subtext">Seus atalhos preferidos</span></div>
+  <div class="favorite-list" id="favoritesList"></div>
+</section>
+<div class="note" id="status" role="status">Favoritos salvos neste aparelho. Para sincronizar, configure sua conta Firebase.</div>
+<div class="note update" id="update"><span id="updateText">Versão experimental Switch: ainda sem arquivo NRO pronto.</span><button class="btn" id="updateBtn" type="button">Verificar versão</button></div>
+<section class="settings-panel" id="settingsPanel" hidden aria-labelledby="settingsTitle">
+  <div class="section-heading"><h2 id="settingsTitle">Configurações</h2><button class="btn" id="closeSettings" type="button">Fechar</button></div>
+  <div class="controls">
+    <button class="btn" id="sync" type="button">↻ Sincronizar</button>
+    <button class="btn" id="orientation" type="button" aria-label="Alternar formato do layout no Switch">▣ Tela: Ampla</button>
+    <button class="btn" id="backup" type="button">⇄ Backup</button>
+  </div>
+</section>
+<nav class="bottom-nav" aria-label="Navegação principal">
+  <button id="navHome" type="button" class="active" aria-current="page"><span class="nav-glyph">⌂</span><span>Início</span></button>
+  <button id="navFavorites" type="button"><span class="nav-glyph">☆</span><span>Favoritos</span></button>
+  <button id="navAdd" type="button"><span class="nav-glyph">⊕</span><span>Novo site</span></button>
+  <button id="navSettings" type="button"><span class="nav-glyph">⚙</span><span>Ajustes</span></button>
+  <button id="navAccount" type="button"><span class="nav-glyph">♙</span><span>Conta</span></button>
+</nav>
+<footer>HubNX · Navegador integrado · A compatibilidade de cada site e de vídeos protegidos por DRM depende do dispositivo. Sincronização somente após configurar o Firebase.</footer>
 </main>
 <dialog id="backupDialog"><h2>Backup dos favoritos</h2>
 <p>Copie o conteúdo abaixo para um lugar seguro. Para importar, cole um backup existente e toque em Importar. Esta função não exporta suas senhas.</p>
@@ -99,8 +184,63 @@ function message(s,kind){$('status').textContent=s;$('status').className='note'+
 function validUrl(s){try{let u=new URL(s);return ['https:','http:'].includes(u.protocol)&&!!u.hostname&& !u.username && !u.password;}catch(e){return false;}}
 function read(){try{const x=JSON.parse(localStorage.getItem(KEY));if(Array.isArray(x))return x.filter(z=>z&&typeof z.id==='string'&&typeof z.name==='string'&&validUrl(z.url)).slice(0,1000);}catch(e){}return initial.map(x=>Object.assign({},x));}
 function save(mark){localStorage.setItem(KEY,JSON.stringify(sites));if(mark){dirty=true;localStorage.setItem(DIRTY,'1'); if(session)window.setTimeout(sync,700);}render();}
-function render(){let q=$('search').value.trim().toLowerCase();$('cards').replaceChildren();$('count').textContent='('+sites.length+')';let found=sites.filter(s=>s.name.toLowerCase().includes(q)||s.url.toLowerCase().includes(q));if(!found.length){let t=document.createElement('div');t.className='empty';t.textContent='Nenhum site encontrado. Cadastre um novo favorito.';$('cards').append(t);return;}
-for(const s of found){let card=document.createElement('article');card.className='card';let open=document.createElement('button');open.className='open';open.type='button';open.setAttribute('aria-label','Abrir '+s.name);let sym=document.createElement('span');sym.className='symbol';sym.textContent=(s.name.trim()[0]||'▶').toUpperCase();let info=document.createElement('span');let name=document.createElement('b');name.textContent=s.name;let address=document.createElement('small');address.textContent=s.url;info.append(name,address);open.append(sym,info);open.onclick=()=>{window.location.assign(s.url);};let actions=document.createElement('div');actions.className='actions';let edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.onclick=()=>showSite(s);let remove=document.createElement('button');remove.type='button';remove.textContent='Excluir';remove.onclick=()=>{if(confirm('Excluir '+s.name+'?')){sites=sites.filter(x=>x.id!==s.id);save(true);}};actions.append(edit,remove);card.append(open,actions);$('cards').append(card);}}
+const PINS_KEY='hubnx.favorite.ids.v1';
+let pins=new Set((()=>{try{const x=JSON.parse(localStorage.getItem(PINS_KEY));return Array.isArray(x)?x:['cinevs','netflix'];}catch(e){return ['cinevs','netflix'];}})());
+function brandOf(site){
+  let host='';try{host=new URL(site.url).hostname.toLowerCase();}catch(e){}
+  const name=site.name.toLowerCase();
+  if(host.endsWith('netflix.com')||name==='netflix')return {className:'netflix',symbol:'N'};
+  if(host.endsWith('youtube.com')||host==='youtu.be'||name==='youtube')return {className:'youtube',symbol:'▶'};
+  if(host.includes('cinevs')||name.includes('cinevs'))return {className:'cinevs',symbol:'▶'};
+  if(host.includes('disneyplus.com')||name.includes('disney'))return {className:'disney',symbol:'D+'};
+  if(host.includes('primevideo.com')||name.includes('prime'))return {className:'prime',symbol:'P'};
+  return {className:'',symbol:(site.name.trim()[0]||'▶').toUpperCase()};
+}
+function savePins(){localStorage.setItem(PINS_KEY,JSON.stringify([...pins]));render();}
+function togglePin(id){if(pins.has(id))pins.delete(id);else pins.add(id);savePins();}
+function openSite(site){window.location.assign(site.url);}
+function mini(site){let b=brandOf(site),el=document.createElement('span');el.className='mini-icon '+b.className;el.textContent=b.symbol;return el;}
+function render(){
+  const query=$('search').value.trim().toLowerCase();
+  const found=sites.filter(s=>s.name.toLowerCase().includes(query)||s.url.toLowerCase().includes(query));
+  const cards=$('cards');
+  cards.replaceChildren();
+  $('count').textContent='('+sites.length+')';
+  if(!found.length){
+    const empty=document.createElement('div');empty.className='empty';empty.textContent='Nenhum site encontrado. Adicione um novo atalho.';cards.append(empty);
+  }
+  for(const site of found){
+    const brand=brandOf(site);
+    const card=document.createElement('article');card.className='card';
+    const open=document.createElement('button');open.className='open';open.type='button';open.setAttribute('aria-label','Abrir '+site.name);open.onclick=()=>openSite(site);
+    const sym=document.createElement('span');sym.className='symbol '+brand.className;sym.textContent=brand.symbol;
+    const info=document.createElement('span');const name=document.createElement('b');name.textContent=site.name;
+    const address=document.createElement('small');address.textContent=site.url;
+    info.append(name,address);open.append(sym,info);
+    const actions=document.createElement('div');actions.className='actions';
+    const favorite=document.createElement('button');favorite.type='button';favorite.className='pin';favorite.textContent=pins.has(site.id)?'★':'☆';favorite.setAttribute('aria-pressed',pins.has(site.id)?'true':'false');
+    favorite.setAttribute('aria-label',(pins.has(site.id)?'Remover dos favoritos ':'Adicionar aos favoritos ')+site.name);favorite.onclick=()=>togglePin(site.id);
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.onclick=()=>showSite(site);
+    const remove=document.createElement('button');remove.type='button';remove.textContent='Excluir';remove.onclick=()=>{if(confirm('Excluir '+site.name+'?')){sites=sites.filter(x=>x.id!==site.id);pins.delete(site.id);localStorage.setItem(PINS_KEY,JSON.stringify([...pins]));save(true);}};
+    actions.append(favorite,edit,remove);card.append(open,actions);cards.append(card);
+  }
+  const list=$('favoritesList');list.replaceChildren();
+  const favorites=sites.filter(s=>pins.has(s.id) && (s.name.toLowerCase().includes(query)||s.url.toLowerCase().includes(query)));
+  if(!favorites.length){
+    const empty=document.createElement('div');empty.className='favorite-empty';empty.textContent='Toque na estrela ★ de um site para adicioná-lo aos favoritos.';list.append(empty);
+  }
+  for(const site of favorites){
+    const row=document.createElement('div');row.className='favorite-item';
+    const open=document.createElement('button');open.className='favorite-open';open.type='button';
+    open.setAttribute('aria-label','Abrir '+site.name);
+    const name=document.createElement('b');name.textContent=site.name;
+    const url=document.createElement('small');url.textContent=site.url;
+    open.append(name,url);open.onclick=()=>openSite(site);
+    const star=document.createElement('button');star.type='button';star.className='favorite-star';star.textContent='★';
+    star.setAttribute('aria-label','Remover '+site.name+' dos favoritos');star.onclick=()=>togglePin(site.id);
+    row.append(mini(site),open,star);list.append(row);
+  }
+}
 function showSite(s){editing=s?s.id:null;$('siteTitle').textContent=s?'Editar site':'Adicionar site';$('name').value=s?s.name:'';$('url').value=s?s.url:'';$('err').textContent='';$('siteDialog').showModal();}
 $('backup').onclick=()=>{
   $('backupData').value=JSON.stringify({format:'hubnx-favorites-v1',sites},null,2);
@@ -129,6 +269,24 @@ $('backupImport').onclick=()=>{
     message(added+' site(s) importados. Seus favoritos anteriores foram preservados.','success');
   }catch(e){$('backupErr').textContent='Não foi possível importar: '+e.message;}
 };
+
+$('navAdd').onclick=()=>showSite(null);
+$('navAccount').onclick=()=>$('account').click();
+$('navFavorites').onclick=()=>{
+ $('favoritesSection').scrollIntoView({behavior:'smooth',block:'start'});
+ for(const b of document.querySelectorAll('.bottom-nav button')){b.classList.remove('active');b.removeAttribute('aria-current');}
+ $('navFavorites').classList.add('active');$('navFavorites').setAttribute('aria-current','page');
+};
+$('navHome').onclick=()=>{
+ window.scrollTo({top:0,behavior:'smooth'});
+ for(const b of document.querySelectorAll('.bottom-nav button')){b.classList.remove('active');b.removeAttribute('aria-current');}
+ $('navHome').classList.add('active');$('navHome').setAttribute('aria-current','page');
+};
+$('navSettings').onclick=()=>{
+ const panel=$('settingsPanel');panel.hidden=!panel.hidden;
+ if(!panel.hidden)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+$('closeSettings').onclick=()=>{$('settingsPanel').hidden=true;};
 $('add').onclick=()=>showSite(null);$('cancel').onclick=()=>$('siteDialog').close();$('search').oninput=render;
 $('siteForm').onsubmit=e=>{e.preventDefault();let name=$('name').value.trim(),url=$('url').value.trim();if(!name||!validUrl(url)){$('err').textContent='Informe nome e URL HTTP/HTTPS válida, sem credenciais.';return;}if(editing){sites=sites.map(x=>x.id===editing?{id:x.id,name,url}:x);}else{sites.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),name,url});}save(true);$('siteDialog').close();};
 function apiError(e){let x=e&&e.error&&e.error.message;return x||e.message||'Falha de conexão.';}
