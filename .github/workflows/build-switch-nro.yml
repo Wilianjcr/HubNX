@@ -22,6 +22,18 @@ jobs:
           test -s chromium-nx/media-hub/icon.jpg
           bash -n chromium-nx/gx/build-chromium.sh
           bash -n chromium-nx/gx/build-nx.sh
+      - name: Garantir Chromium completo e dependências de mídia
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('chromium-nx/gx/docker/Dockerfile')
+          s = p.read_text()
+          old = 'chromium-headless-shell:arm64 chromium-shell:arm64 fonts-dejavu-core'
+          new = 'chromium-headless-shell:arm64 chromium-shell:arm64 chromium:arm64 libavcodec-dev libavutil-dev libswresample-dev fonts-dejavu-core'
+          if old not in s:
+              raise SystemExit('Dockerfile upstream mudou; revise dependências')
+          p.write_text(s.replace(old,new,1))
+          PY
       - name: Montar ambiente Linux arm64 do Chromium NX
         run: |
           docker build -t hubnx-browser -f chromium-nx/gx/docker/Dockerfile chromium-nx/gx/docker
