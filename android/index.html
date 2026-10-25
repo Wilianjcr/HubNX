@@ -29,7 +29,7 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 <button class="btn" id="sync" type="button">↻ Sincronizar</button>
 <button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
 <div class="note" id="status" role="status">Favoritos armazenados neste dispositivo. Entre na mesma conta nos dois aparelhos para sincronizar.</div>
-<div class="note update" id="update"><span id="updateText">HubNX v0.2.3 • Verificação de atualização opcional.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
+<div class="note update" id="update"><span id="updateText">HubNX v0.2.4 • Verificação de atualização opcional.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
 <section class="hero"><p>Sua central de acesso</p><h1>O que vamos abrir hoje?</h1><p>Cadastre seus sites favoritos no celular e acesse no Switch. Alguns sites podem não reproduzir vídeos no console.</p></section>
 <div class="toolbar"><h2>Minha biblioteca <span class="muted" id="count"></span></h2><input id="search" type="search" placeholder="Pesquisar sites" aria-label="Pesquisar sites"></div>
 <div class="grid" id="cards"></div>
@@ -57,7 +57,7 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 <script>
 (function(){
 'use strict';
-const VERSION='0.2.3', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
+const VERSION='0.2.4', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
 const $=id=>document.getElementById(id);
 function loadCloud(){try {const local=JSON.parse(localStorage.getItem('hubnx.firebase.web.v1')||'null');
 return local&&local.apiKey&&local.projectId ? local : (window.HUBNX_FIREBASE||{});
