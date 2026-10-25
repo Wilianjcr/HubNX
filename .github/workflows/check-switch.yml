@@ -1,0 +1,29 @@
+name: HubNX Switch — validar adaptação
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'switch/**'
+      - 'tools/prepare_chromium_nx.py'
+      - '.github/workflows/check-switch.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fonte HubNX
+        uses: actions/checkout@v4
+      - name: Obter Chromium NX upstream
+        run: git clone --depth 1 https://github.com/shodowlo/chromium-nx.git /tmp/chromium-nx
+      - name: Validar sintaxe e patch do HubNX
+        run: |
+          python3 -m py_compile tools/prepare_chromium_nx.py
+          python3 tools/prepare_chromium_nx.py /tmp/chromium-nx
+          bash -n /tmp/chromium-nx/gx/build-nx.sh
+          bash -n /tmp/chromium-nx/gx/build-chromium.sh
+          test -f /tmp/chromium-nx/media-hub/index.html
+          grep -q 'HubNX' /tmp/chromium-nx/gx/build-nx.sh
+          grep -q 'file:///usr/share/gx/hubnx/index.html' /tmp/chromium-nx/gx/host_nx.c
+          echo "Fontes preparadas; compilação do NRO ainda necessária."
