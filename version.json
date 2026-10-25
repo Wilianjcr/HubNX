@@ -1,11 +1,11 @@
 {
-  "version": "0.2.2",
+  "version": "0.2.3",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
-  "notes": "Android 0.2.2: navegador interno + busca por Releases, download e instalação com confirmação. Nenhuma Release assinada publicada. Switch .nro ainda pendente.",
+  "notes": "Android 0.2.3: checagem automática em primeiro plano, WorkManager periódico e notificação de atualização; downloads e instalação com consentimento. Release assinada ainda pendente; Switch .nro não compilado.",
   "nro_available": false,
   "android_pwa_available": false,
   "android_apk_available": true,
-  "android_version": "0.2.2",
+  "android_version": "0.2.3",
   "switch_version": null,
   "android_release_published": false
 }
