@@ -1,11 +1,11 @@
 {
-  "version": "0.2.7",
+  "version": "0.2.8",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
-  "notes": "Android 0.2.7: nova interface dark blue com biblioteca, cards, favoritos com estrelas e navegação inferior. Build de teste, sem Release oficial; Switch com UI remodelada e sem NRO validado.",
+  "notes": "Android 0.2.8: avisos de atualização incluem compilações de testes quando Releases oficiais ainda não existem. APK debug ainda não pode garantir atualização sobre versão já instalada. Switch não alterado.",
   "nro_available": false,
   "android_pwa_available": false,
   "android_apk_available": true,
-  "android_version": "0.2.7",
+  "android_version": "0.2.8",
   "switch_version": null,
   "android_release_published": false
 }
