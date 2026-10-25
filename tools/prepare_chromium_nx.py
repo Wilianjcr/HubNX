@@ -22,6 +22,7 @@ def prepare(src):
     ui.mkdir(exist_ok=True)
     for f in ("index.html", "firebase-config.js"):
         shutil.copy2(PROJECT / "switch" / "media-hub" / f, ui / f)
+    shutil.copy2(PROJECT / "branding" / "hubnx-icon.svg", ui / "icon.svg")
 
     host = gx / "host_nx.c"
     t = host.read_text()
@@ -58,7 +59,9 @@ def prepare(src):
     t = script.read_text()
     changes = [
         ('nacptool --create "Chromium NX" "shodowlo" "0.1"',
-         'nacptool --create "HubNX" "HubNX" "0.2.0"'),
+         'nacptool --create "HubNX" "HubNX" "0.2.3"'),
+        ('--icon="$SRC/nx/icon.jpg"',
+         '--icon="$SRC/../media-hub/icon.jpg"'),
         ('APP=$DIST/switch/chromium-nx','APP=$DIST/switch/hubnx'),
         ('cp "$OUT/gx.nro" "$APP/chromium-nx.nro"',
          'cp "$OUT/gx.nro" "$APP/hubnx.nro"'),
@@ -71,7 +74,7 @@ def prepare(src):
     for a,b in changes: t=one(t,a,b)
     script.write_text(t)
     print("Fontes preparadas:", src)
-    print("O ícone upstream é provisório e requer substituição após os testes.")
+    print("Ícone HubNX: gere media-hub/icon.jpg a partir de media-hub/icon.svg antes do build Switch.")
     print("A compilação exige o ambiente completo Chromium NX.")
 
 if __name__ == "__main__":
