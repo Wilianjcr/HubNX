@@ -267,6 +267,13 @@ public class MainActivity extends Activity {
             && uri.getPath() != null && uri.getPath().startsWith("/assets/");
     }
 
+    /** Opens the public update page inside HubNX, not the external browser. */
+    public void openUpdatePage(String url) {
+        if(url!=null && url.matches("https://github\\.com/Wilianjcr/HubNX/actions/runs/[0-9]+")) {
+            openSite(url);
+        }
+    }
+
     private void openSite(String url) {
         Uri uri = Uri.parse(url);
         if (!isWeb(uri)) { toast("Endereço inválido"); return; }
