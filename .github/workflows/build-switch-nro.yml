@@ -1,5 +1,9 @@
 name: HubNX Switch - compilar NRO experimental
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'build-requests/switch.txt'
   workflow_dispatch:
 
 permissions:
