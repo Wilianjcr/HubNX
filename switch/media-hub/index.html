@@ -27,6 +27,7 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 <header><div class="brand"><span class="logo" aria-hidden="true"><img src="./icon.svg" alt="" style="width:100%;height:100%;border-radius:15px"></span><span><strong>HubNX</strong><small>Android • Nintendo Switch</small></span></div><nav class="controls">
 <button class="btn" id="account" type="button">☁ Conta</button>
 <button class="btn" id="sync" type="button">↻ Sincronizar</button>
+<button class="btn" id="backup" type="button">⇄ Backup</button>
 <button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
 <div class="note" id="status" role="status">Favoritos armazenados neste dispositivo. Entre na mesma conta nos dois aparelhos para sincronizar.</div>
 <div class="note update" id="update"><span id="updateText">HubNX Switch experimental v0.2.0 • Atualizações verificadas ao abrir.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
@@ -35,6 +36,15 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 <div class="grid" id="cards"></div>
 <footer>HubNX • Favoritos por dispositivo e sincronização opcional por Firebase. Netflix é um atalho: reprodução sujeita ao DRM e à compatibilidade do navegador.</footer>
 </main>
+<dialog id="backupDialog"><h2>Backup dos favoritos</h2>
+<p>Copie o conteúdo abaixo para um lugar seguro. Para importar, cole um backup existente e toque em Importar. Esta função não exporta suas senhas.</p>
+<textarea id="backupData" rows="8" spellcheck="false" style="width:100%;background:#0d1625;border:1px solid #52617a;color:white;border-radius:12px;padding:12px;font-size:12px"></textarea>
+<p id="backupErr" role="alert" style="color:#ffb8c2"></p>
+<div class="dialog-actions">
+<button class="btn" id="backupCancel" type="button">Fechar</button>
+<button class="btn" id="backupCopy" type="button">Selecionar para copiar</button>
+<button class="btn primary" id="backupImport" type="button">Importar links</button>
+</div></dialog>
 <dialog id="siteDialog"><form id="siteForm"><h2 id="siteTitle">Adicionar site</h2><p>Use um endereço HTTP ou HTTPS completo.</p>
 <label>Nome<input id="name" maxlength="60" required autocomplete="off" placeholder="Meu site"></label>
 <label>Endereço<input id="url" maxlength="600" required autocomplete="off" inputmode="url" placeholder="https://exemplo.com"></label>
@@ -73,6 +83,33 @@ function save(mark){localStorage.setItem(KEY,JSON.stringify(sites));if(mark){dir
 function render(){let q=$('search').value.trim().toLowerCase();$('cards').replaceChildren();$('count').textContent='('+sites.length+')';let found=sites.filter(s=>s.name.toLowerCase().includes(q)||s.url.toLowerCase().includes(q));if(!found.length){let t=document.createElement('div');t.className='empty';t.textContent='Nenhum site encontrado. Cadastre um novo favorito.';$('cards').append(t);return;}
 for(const s of found){let card=document.createElement('article');card.className='card';let open=document.createElement('button');open.className='open';open.type='button';open.setAttribute('aria-label','Abrir '+s.name);let sym=document.createElement('span');sym.className='symbol';sym.textContent=(s.name.trim()[0]||'▶').toUpperCase();let info=document.createElement('span');let name=document.createElement('b');name.textContent=s.name;let address=document.createElement('small');address.textContent=s.url;info.append(name,address);open.append(sym,info);open.onclick=()=>{window.location.assign(s.url);};let actions=document.createElement('div');actions.className='actions';let edit=document.createElement('button');edit.type='button';edit.textContent='Editar';edit.onclick=()=>showSite(s);let remove=document.createElement('button');remove.type='button';remove.textContent='Excluir';remove.onclick=()=>{if(confirm('Excluir '+s.name+'?')){sites=sites.filter(x=>x.id!==s.id);save(true);}};actions.append(edit,remove);card.append(open,actions);$('cards').append(card);}}
 function showSite(s){editing=s?s.id:null;$('siteTitle').textContent=s?'Editar site':'Adicionar site';$('name').value=s?s.name:'';$('url').value=s?s.url:'';$('err').textContent='';$('siteDialog').showModal();}
+$('backup').onclick=()=>{
+  $('backupData').value=JSON.stringify({format:'hubnx-favorites-v1',sites},null,2);
+  $('backupErr').textContent='';$('backupDialog').showModal();};
+$('backupCancel').onclick=()=>$('backupDialog').close();
+$('backupCopy').onclick=()=>{
+  $('backupData').focus();$('backupData').select();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText($('backupData').value).then(()=>message('Backup copiado. Guarde em local seguro.','success')).catch(()=>{});
+  }
+};
+$('backupImport').onclick=()=>{
+  try{
+    if($('backupData').value.length>250000)throw Error('Backup acima do limite.');
+    const data=JSON.parse($('backupData').value);
+    if(data.format!=='hubnx-favorites-v1'||!Array.isArray(data.sites))throw Error('Formato inválido.');
+    if(data.sites.length>1000)throw Error('Muitos favoritos.');
+    const records=data.sites.map(x=>{
+      if(!x||typeof x.name!=='string'||typeof x.url!=='string'||!validUrl(x.url))throw Error('Endereço inválido no backup.');
+      return {id:typeof x.id==='string'&&x.id.length<100?x.id:'s'+Math.random().toString(36).slice(2),name:x.name.trim().slice(0,60),url:x.url.trim()};
+    }).filter(x=>x.name);
+    if(!confirm('Importar '+records.length+' site(s) e manter os favoritos que já existem?'))return;
+    const urls=new Set(sites.map(x=>x.url.toLowerCase()));
+    let added=0;for(const x of records){if(!urls.has(x.url.toLowerCase())){sites.push(x);urls.add(x.url.toLowerCase());added++;}}
+    save(true);$('backupDialog').close();
+    message(added+' site(s) importados. Seus favoritos anteriores foram preservados.','success');
+  }catch(e){$('backupErr').textContent='Não foi possível importar: '+e.message;}
+};
 $('add').onclick=()=>showSite(null);$('cancel').onclick=()=>$('siteDialog').close();$('search').oninput=render;
 $('siteForm').onsubmit=e=>{e.preventDefault();let name=$('name').value.trim(),url=$('url').value.trim();if(!name||!validUrl(url)){$('err').textContent='Informe nome e URL HTTP/HTTPS válida, sem credenciais.';return;}if(editing){sites=sites.map(x=>x.id===editing?{id:x.id,name,url}:x);}else{sites.push({id:'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),name,url});}save(true);$('siteDialog').close();};
 function apiError(e){let x=e&&e.error&&e.error.message;return x||e.message||'Falha de conexão.';}
