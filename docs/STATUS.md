@@ -1,44 +1,34 @@
-# Estado confirmado do HubNX — 25/10/2026
+# HubNX — Estado verificado em 25/10/2026
 
-## GitHub
-- Repositório Wilianjcr/HubNX acessível por integração conectada.
-- Visibilidade confirmada: **PRIVATE**.
-- Código Android, fonte Switch, documentação e regras Firestore publicados.
+## Visibilidade
+- Repositório Wilianjcr/HubNX: PUBLIC (verificado).
+- Arquivos Firebase Web possuem apenas placeholders; não há chave privada configurada nesse arquivo.
+- Histórico, commits, Issues e código tornam-se visíveis a terceiros.
 
 ## Android
-- Interface web e JavaScript publicados em android/index.html.
-- Sintaxe JavaScript passou na checagem do GitHub Actions.
-- Projeto Android nativo baseado em WebViewAssetLoader publicado em android-native/.
-- APK debug compilado com sucesso no workflow privado da execução 40224889894.
-- Artefato: HubNX-Android-debug, disponível na página de Actions para quem tem acesso ao repositório.
-- Ainda faltam instalação real no celular e testes de favoritos/sincronização.
+- Versão fonte e APK debug: 0.2.2.
+- Navegador interno implementado no app Android: confirmado no código e compilado por GitHub Actions.
+- Verificador de Releases instalado no código. Consulta GitHub Releases ao iniciar e oferece download do APK oficial com autorização do Android.
+- Compilação CI de sucesso: https://github.com/Wilianjcr/HubNX/actions/runs/40228359672
+- A primeira Release assinada ainda não existe. É necessário configurar secrets de assinatura Android e publicar uma tag de versão conforme docs/RELEASES.md.
+- Nenhum teste do atualizador com uma Release verdadeira ou instalação no celular foi executado.
+- APK debug possui certificado potencialmente diferente em novos builds e não é distribuição oficial.
 
 ## Switch
-- Interface completa publicada em switch/media-hub/.
-- Script tools/prepare_chromium_nx.py publicado para transformar o Chromium NX em um homebrew independente.
-- Padrões de patch conferidos contra fontes upstream.
-- Ainda não houve compilação do NRO nem teste no hardware.
-- Compatibilidade do CineVS e da Netflix ainda não validada.
+- Interface e script de adaptação Chromium NX publicados.
+- NÃO existe hubnx.nro compilado, Release do Switch ou autoatualizador executável.
+- Nenhum teste de reprodução no console.
 
-## Firebase / sincronização
-- Código de autenticação e sincronização por API REST integrado aos dois clientes.
-- Regras de segurança disponíveis em firebase/firestore.rules.
-- O Firebase real ainda precisa ser configurado e as regras implantadas.
-- Nenhum teste ponta-a-ponta Android → Firestore → Switch foi executado.
+## Sincronização
+- Código REST Firebase e regras por usuário publicados.
+- Projeto Firebase real, autenticação e teste entre os dois dispositivos ainda pendentes.
 
 ## Atualizações
-- version.json publicado no repositório privado.
-- Raw Github anônimo não acessa repositório privado; verificação remota ainda exige solução autenticada/endpoint específico.
+- version.json agora é publicamente legível.
+- Não é suficiente mudar version.json para atualizar apps Android e Switch.
+- Android busca Release binária assinada, pede download/instalação com permissão do usuário.
+- Switch requer módulo nativo de atualização ainda não desenvolvido.
 
-## Privacidade
-- Nenhum GitHub Pages público ativado.
-- APK fica em artifact privado, não em release pública.
-- Não incluir senhas, tokens nem chaves privadas em commits.
-
-## Correção do navegador integrado Android — 0.2.1
-- A antiga versão Android abria sites com `ACTION_VIEW` no navegador externo; isso foi substituído.
-- Há agora um WebView separado para os sites selecionados, dentro do app, com Início/Voltar/Avançar/Atualizar e barra de endereço.
-- Vídeo em tela cheia é solicitado pelo WebChromeClient; depende do player remoto.
-- A biblioteca continua no WebView local, isolado do conteúdo externo.
-- Netflix e outros serviços com DRM podem não funcionar em WebView.
-- O APK de correção está sendo produzido no GitHub Actions e requer teste real no Android.
+## Segurança
+- Não colocar secrets, keystores, tokens, chaves de serviço ou senhas nos commits.
+- Quando o primeiro APK final for assinado, reutilizar a mesma chave em todas as versões seguintes.
