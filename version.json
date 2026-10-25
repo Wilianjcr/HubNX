@@ -1,11 +1,11 @@
 {
-  "version": "0.2.4",
+  "version": "0.2.5",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
-  "notes": "Android 0.2.4: ícone exclusivo HubNX, configuração Firebase no app, navegador integrado e alertas automáticos. Switch em compilação experimental, .nro ainda não entregue.",
+  "notes": "Android 0.2.5: navegador próprio, ícone exclusivo, cadastro Firebase in-app, backup de favoritos e alertas automáticos. Nintendo Switch: compilação experimental ainda em teste.",
   "nro_available": false,
   "android_pwa_available": false,
   "android_apk_available": true,
-  "android_version": "0.2.4",
+  "android_version": "0.2.5",
   "switch_version": null,
   "android_release_published": false
 }
