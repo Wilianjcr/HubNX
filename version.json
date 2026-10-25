@@ -1,7 +1,8 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.1",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
-  "notes": "HubNX Android e Switch em fase de testes privados.",
+  "notes": "Android: navegador integrado ao HubNX (voltar, avançar, atualizar, início, endereço e vídeo em tela cheia); versão Switch ainda pendente.",
   "nro_available": false,
-  "android_pwa_available": false
+  "android_pwa_available": false,
+  "android_apk_available": true
 }
