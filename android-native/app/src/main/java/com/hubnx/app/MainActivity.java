@@ -1,6 +1,7 @@
 package com.hubnx.app;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.net.Uri;
@@ -53,7 +54,7 @@ public class MainActivity extends Activity {
         library = new WebView(this);
         configureWebView(library);
         library.getSettings().setUserAgentString(
-            library.getSettings().getUserAgentString() + " HubNXNative/0.2.2");
+            library.getSettings().getUserAgentString() + " HubNXNative/0.2.3");
         library.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
@@ -173,7 +174,12 @@ public class MainActivity extends Activity {
         browserShell.setVisibility(View.GONE);
         setContentView(root);
         library.loadUrl(HOME);
-        updater.check(false);
+        UpdateWorker.schedule(this);
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 55);
+        }
     }
 
     private void configureWebView(WebView view) {
@@ -270,6 +276,18 @@ public class MainActivity extends Activity {
             else returnToLibrary();
         } else if (library.canGoBack()) library.goBack();
         else super.onBackPressed();
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if (updater != null) updater.check(false);
+    }
+
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && intent.getBooleanExtra("hubnx_check_update", false)
+            && updater != null) updater.check(true);
     }
 
     @Override protected void onDestroy() {
