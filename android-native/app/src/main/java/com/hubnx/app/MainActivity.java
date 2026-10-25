@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
         library = new WebView(this);
         configureWebView(library);
         library.getSettings().setUserAgentString(
-            library.getSettings().getUserAgentString() + " HubNXNative/0.2.6");
+            library.getSettings().getUserAgentString() + " HubNXNative/0.2.8");
         library.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
