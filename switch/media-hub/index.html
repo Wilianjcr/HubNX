@@ -29,7 +29,7 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 <button class="btn" id="sync" type="button">↻ Sincronizar</button>
 <button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
 <div class="note" id="status" role="status">Favoritos armazenados neste dispositivo. Entre na mesma conta nos dois aparelhos para sincronizar.</div>
-<div class="note update" id="update"><span id="updateText">HubNX v0.2.0 • Verificação de atualização opcional.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
+<div class="note update" id="update"><span id="updateText">HubNX Switch experimental v0.2.0 • Atualizações verificadas ao abrir.</span><button class="btn" id="updateBtn">Verificar versão</button></div>
 <section class="hero"><p>Sua central de acesso</p><h1>O que vamos abrir hoje?</h1><p>Cadastre seus sites favoritos no celular e acesse no Switch. Alguns sites podem não reproduzir vídeos no console.</p></section>
 <div class="toolbar"><h2>Minha biblioteca <span class="muted" id="count"></span></h2><input id="search" type="search" placeholder="Pesquisar sites" aria-label="Pesquisar sites"></div>
 <div class="grid" id="cards"></div>
@@ -91,14 +91,40 @@ $('register').onclick=()=>{if(!$('authForm').reportValidity())return;authenticat
 $('logout').onclick=()=>{session=null;localStorage.removeItem(SESSION);$('authDialog').close();message('Conta desconectada. Favoritos locais preservados.');};
 async function restore(){if(!cloudReady)return;try{let x=JSON.parse(localStorage.getItem(SESSION)||'null');if(!x||!x.uid||!x.refreshToken)return;session={uid:x.uid,email:x.email,refreshToken:x.refreshToken};await token();await sync();}catch(e){session=null;localStorage.removeItem(SESSION);message('Sessão expirada; entre na conta novamente.','error');}}
 const manifest='https://raw.githubusercontent.com/Wilianjcr/HubNX/main/version.json';
-$('updateBtn').onclick=async()=>{
-$('updateBtn').disabled=true;
-try{let r=await fetch(manifest+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('offline/private');let x=await r.json();let regex=/^\d+\.\d+\.\d+$/;if(!regex.test(x.version))throw Error('invalid');
-const newer=(a,b)=>{let aa=a.split('.').map(Number),bb=b.split('.').map(Number);for(let i=0;i<3;i++){if(aa[i]!==bb[i])return aa[i]>bb[i];}return false;};
-$('updateText').textContent=newer(x.version,VERSION)?'Nova versão '+x.version+' disponível. Consulte Releases no GitHub.':'Versão instalada '+VERSION+' • Nenhuma atualização nova.';
-}catch(e){$('updateText').textContent='A consulta pública não funciona enquanto o repositório estiver privado. Sem alterações no aplicativo.';}finally{$('updateBtn').disabled=false;}
-};
+let lastSwitchAlert='';
+async function checkSwitchUpdates(manual=false){
+  $('updateBtn').disabled=true;
+  try {
+    let response=await fetch(manifest+'?t='+Date.now(),{cache:'no-store'});
+    if(!response.ok)throw Error('Servidor indisponível');
+    const data=await response.json();
+    const current=VERSION.split('.').map(Number);
+    const target=typeof data.switch_version==='string'
+      ? data.switch_version.split('.').map(Number) : null;
+    const newer=target && target.length===3 &&
+      target.some((v,i)=>Number.isInteger(v) && v>current[i] &&
+        target.slice(0,i).every((n,j)=>n===current[j]));
+    if(data.nro_available===true && newer){
+      const notice='Atualização HubNX Switch '+data.switch_version+' disponível.';
+      $('updateText').textContent=notice+' Instalação pelo pacote Switch na página Releases.';
+      $('update').style.borderColor='#6de6d8';
+      if(lastSwitchAlert!==data.switch_version){
+        lastSwitchAlert=data.switch_version;
+        alert(notice+' O atualizador do arquivo .nro ainda precisa ser compilado.');
+      }
+    } else {
+      $('updateText').textContent='HubNX Switch experimental v'+VERSION+
+        ' • Sem atualização instalável no momento.';
+      if(manual)message('Nenhuma atualização Switch publicada no GitHub.');
+    }
+  }catch(e){
+    $('updateText').textContent='Não foi possível consultar versões do Switch. Verifique sua conexão.';
+  }finally{$('updateBtn').disabled=false;}
+}
+$('updateBtn').onclick=()=>checkSwitchUpdates(true);
 sites=read();render();restore();
+checkSwitchUpdates();
+setInterval(()=>checkSwitchUpdates(),60*60*1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&session)sync();});
 setInterval(()=>{if(session&&!document.hidden)sync();},60000);
 if('serviceWorker' in navigator && location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
