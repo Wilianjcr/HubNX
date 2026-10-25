@@ -1,13 +1,5 @@
 name: HubNX Switch - compilar NRO experimental
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'switch/**'
-      - 'branding/**'
-      - 'tools/prepare_chromium_nx.py'
-      - 'tools/render-nro-icon.py'
-      - '.github/workflows/build-switch-nro.yml'
   workflow_dispatch:
 
 permissions:
