@@ -1,2 +1,2 @@
-Build request 2 — 25/10/2026
-Build Chromium NX independent HubNX NRO after adding Chromium full browser and libavcodec-dev/libavutil-dev dependencies. Run workflow using latest main with custom icon and backup/Firebase UI.
+Build request 3 — 25/10/2026
+Retry after installing native ARM64 FFmpeg development headers (libavcodec, libavutil, libswresample) and preflight checks. Include new Switch wide/compact layout and HubNX icons. Produce NRO only if full build succeeds.
