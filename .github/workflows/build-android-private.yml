@@ -1,0 +1,53 @@
+name: HubNX Android APK privado
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'android-native/**'
+      - '.github/workflows/build-android-private.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter o código privado
+        uses: actions/checkout@v4
+      - name: Conferir sintaxe de scripts web
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('android/index.html').read_text(encoding='utf-8')
+          start=html.rfind('<script>')
+          end=html.find('</script>',start)
+          assert start >= 0 and end > start
+          Path('/tmp/hubnx-web.js').write_text(html[start+8:end],encoding='utf-8')
+          PY
+          node --check /tmp/hubnx-web.js
+      - name: Preparar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Preparar Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Copiar interface web para o aplicativo Android
+        run: |
+          mkdir -p android-native/app/src/main/assets
+          cp -R android/. android-native/app/src/main/assets/
+      - name: Compilar APK debug
+        working-directory: android-native
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Guardar APK apenas no GitHub privado
+        uses: actions/upload-artifact@v4
+        with:
+          name: HubNX-Android-debug
+          path: android-native/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+          if-no-files-found: error
