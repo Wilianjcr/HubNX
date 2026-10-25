@@ -1,0 +1,18 @@
+{
+  "name": "HubNX — Meus sites",
+  "short_name": "HubNX",
+  "description": "Gerenciador de links para Android e Nintendo Switch.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c111c",
+  "theme_color": "#0c111c",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
