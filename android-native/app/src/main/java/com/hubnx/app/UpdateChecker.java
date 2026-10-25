@@ -42,45 +42,76 @@ public final class UpdateChecker {
             activity.getSystemService(Context.DOWNLOAD_SERVICE);
     }
 
-    private boolean checking = false;
-    private long lastCheckTime = 0;
-    public synchronized void check(boolean userRequested) {
-        long now = System.currentTimeMillis();
-        if (checking || (!userRequested && now - lastCheckTime < 10L * 60 * 1000)) return;
-        checking = true;
-        lastCheckTime = now;
-        new Thread(() -> {
+    private boolean checking=false;
+    private long lastCheckTime=0;
+
+    public synchronized void check(boolean userRequested){
+        long now=System.currentTimeMillis();
+        if(checking||(!userRequested&&now-lastCheckTime<10L*60*1000))return;
+        checking=true;
+        lastCheckTime=now;
+        new Thread(()->{
             try {
-                ReleaseInfo latest = ReleaseInfo.fetch();
-                if (latest == null) {
-                    reportNoUpdate(userRequested, "Ainda não há uma Release Android assinada disponível.");
+                // Stable, signed Releases have priority and can be installed on top
+                // of an existing installation signed with the same key.
+                ReleaseInfo official=ReleaseInfo.fetch();
+                if(official!=null&&official.isNewer()){
+                    activity.runOnUiThread(()->{
+                        if(activity.isFinishing()||activity.isDestroyed())return;
+                        new AlertDialog.Builder(activity)
+                            .setTitle("HubNX "+official.version+" disponível")
+                            .setMessage("Uma nova versão oficial está disponível.\n" +
+                                "Versão instalada: "+BuildConfig.VERSION_NAME+
+                                "\nNova versão: "+official.version+
+                                "\n\nBaixar e instalar pelo próprio HubNX? " +
+                                "O Android solicitará autorização para instalar.")
+                            .setNegativeButton("Depois",null)
+                            .setPositiveButton("Atualizar",
+                                (dialog,which)->download(official.downloadUrl,official.version))
+                            .show();
+                    });
                     return;
                 }
-                if (!latest.isNewer()) {
-                    reportNoUpdate(userRequested, "Seu HubNX está atualizado (" +
-                        BuildConfig.VERSION_NAME + ").");
+
+                DebugBuildInfo debug=DebugBuildInfo.fetch();
+                if(debug!=null&&debug.isNewer()){
+                    android.content.SharedPreferences prefs=activity.getSharedPreferences(
+                        "hubnx_updater",Context.MODE_PRIVATE);
+                    String last=prefs.getString("last_debug_prompt","");
+                    if(userRequested||!debug.version.equals(last)){
+                        prefs.edit().putString("last_debug_prompt",debug.version).apply();
+                        activity.runOnUiThread(()->{
+                            if(activity.isFinishing()||activity.isDestroyed())return;
+                            new AlertDialog.Builder(activity)
+                                .setTitle("HubNX "+debug.version+" — nova versão de teste")
+                                .setMessage("Versão instalada: "+BuildConfig.VERSION_NAME+
+                                    "\nVersão de teste disponível: "+debug.version+
+                                    "\n\nA versão está na seção Actions do GitHub. " +
+                                    "Como os APKs de teste podem ter assinaturas diferentes, " +
+                                    "a instalação por cima pode não funcionar. " +
+                                    "Faça backup dos favoritos antes de substituir o aplicativo.")
+                                .setNegativeButton("Depois",null)
+                                .setPositiveButton("Ver compilação",(d,w)->
+                                    ((MainActivity)activity).openUpdatePage(debug.pageUrl))
+                                .show();
+                        });
+                    }
                     return;
                 }
-                activity.runOnUiThread(() -> {
-                    if (activity.isFinishing() || activity.isDestroyed()) return;
-                    new AlertDialog.Builder(activity)
-                        .setTitle("HubNX " + latest.version + " disponível")
-                        .setMessage("Versão instalada: " + BuildConfig.VERSION_NAME
-                            + "\nNova versão: " + latest.version
-                            + "\n\nA atualização será baixada no próprio aplicativo. "
-                            + "O Android pedirá confirmação para instalar.")
-                        .setNegativeButton("Depois", null)
-                        .setPositiveButton("Atualizar", (dialog, which) ->
-                            download(latest.downloadUrl, latest.version))
-                        .show();
-                });
-            } catch (Exception err) {
-                if (userRequested) reportNoUpdate(true,
-                    "Não foi possível verificar atualizações: " + err.getMessage());
-            } finally {
-                checking = false;
-            }
-        }, "hubnx-update").start();
+                if(userRequested){
+                    if(official==null)
+                        reportNoUpdate(true,"Ainda não há uma versão oficial assinada. "+
+                            "Também não encontrei uma compilação de teste mais recente "+
+                            "que a instalada ("+BuildConfig.VERSION_NAME+").");
+                    else
+                        reportNoUpdate(true,"Nenhuma atualização nova para a versão "+
+                            BuildConfig.VERSION_NAME+".");
+                }
+            }catch(Exception err){
+                if(userRequested)reportNoUpdate(true,
+                    "Falha ao verificar versões: "+err.getMessage());
+            }finally{checking=false;}
+        },"hubnx-update").start();
     }
 
     private void reportNoUpdate(boolean show, String message) {
