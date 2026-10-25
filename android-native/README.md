@@ -1,17 +1,25 @@
-# HubNX Android — APK de teste
+# HubNX Android 0.2.2
 
-App Android independente com WebView Asset Loader. A interface HTML em `android/` é incorporada ao APK como ativo local, sem depender de GitHub Pages e sem disponibilizar a página publicamente.
+O HubNX Android incorpora uma interface web local ao APK e abre os sites em um navegador WebView interno separado, com barra de endereço, voltar, avançar, atualizar, voltar à biblioteca e vídeos em tela cheia quando suportados.
 
-## Compilar localmente
+## APK de testes via GitHub Actions
 
-Requer Android SDK, JDK 17, Gradle 8.10 e conectividade para baixar dependências. Dentro de `android-native/`, copie os arquivos de `../android/` para `app/src/main/assets/`. Execute `gradle :app:assembleDebug`.
+O workflow de CI do GitHub compila automaticamente o app-debug.apk. Abra Actions, escolha a compilação mais recente que terminou com Success e baixe o artefato HubNX-Android-debug. Extraia o ZIP e instale o APK em um aparelho Android.
 
-## GitHub Actions
+ATENÇÃO: é um APK debug; o certificado gerado em cada executor do GitHub pode mudar, então upgrades entre arquivos debug podem falhar por assinatura diferente. Não desinstale uma versão com favoritos locais sem backup ou sincronização validada.
 
-O workflow `.github/workflows/build-android-private.yml` faz a compilação e publica o APK de teste apenas como **artefato privado do GitHub Actions**. No repositório, acesse **Actions > HubNX Android APK privado > execução mais recente > Artifacts** e baixe `HubNX-Android-debug`. É necessário estar autenticado com permissão no repositório.
+## Como funciona a verificação de atualização
 
-O APK é assinado com chave padrão de **debug**, não está pronto para distribuição pública. Os usuários deverão permitir a instalação manual de aplicativo desconhecido no Android e verificar a origem do APK.
+O aplicativo consulta automaticamente, ao abrir, a última Release do repositório público GitHub. Se existir uma versão mais nova e um arquivo HubNX-Android.apk, ele mostrará uma caixa de diálogo para baixar. O Android requer confirmação do usuário para instalar. O botão Verificar versão permite uma consulta manual.
 
-## Observações
+A primeira Release pública assinada não foi criada. Antes de fazê-la, configure assinatura Android permanente em GitHub Secrets conforme docs/RELEASES.md. Sem isso, downloads futuros podem não instalar por cima da versão anterior.
 
-Ao abrir um site da lista no Android, ele é carregado no navegador WebView **interno** ao HubNX, sem iniciar Chrome. A barra possui Início, Voltar, Avançar, Atualizar, endereço e Ir. Vídeo em tela cheia é solicitado ao player do site quando suportado. Alguns sites (especialmente Netflix) podem bloquear autenticação ou reprodução em WebView por requisitos de DRM. Login/sincronização com Firebase só funcionam depois da configuração de `android/firebase-config.js` e `firebase/firestore.rules`.
+## Firebase
+
+A sincronização depende de configurar um projeto Firebase e aplicar regras privadas por usuário, seguindo docs/FIREBASE.md. Apenas preparar o código não sincroniza os sites automaticamente.
+
+## Limitações
+
+- Sites com DRM podem bloquear vídeo e login em WebView, especialmente Netflix.
+- Sites com pop-ups, downloads especiais ou autenticação externa podem requerer ajustes.
+- O projeto Switch ainda não está instalado e necessita compilação.
