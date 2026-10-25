@@ -1,11 +1,11 @@
 {
-  "version": "0.2.8",
+  "version": "0.2.9",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
-  "notes": "Android 0.2.8: avisos de atualização incluem compilações de testes quando Releases oficiais ainda não existem. APK debug ainda não pode garantir atualização sobre versão já instalada. Switch não alterado.",
+  "notes": "Android 0.2.9: avisos automáticos e notificações de novas versões de teste, com canal público de builds. A atualização direta só será possível com APK oficial assinado. Switch inalterado.",
   "nro_available": false,
   "android_pwa_available": false,
   "android_apk_available": true,
-  "android_version": "0.2.8",
+  "android_version": "0.2.9",
   "switch_version": null,
   "android_release_published": false
 }
