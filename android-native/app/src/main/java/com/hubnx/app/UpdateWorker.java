@@ -60,15 +60,26 @@ public final class UpdateWorker extends Worker {
     @Override public Result doWork() {
         Context app = getApplicationContext();
         try {
-            ReleaseInfo latest = ReleaseInfo.fetch();
-            if (latest == null || !latest.isNewer()) return Result.success();
+            ReleaseInfo official = ReleaseInfo.fetch();
+            String version;
+            String kind;
+            if (official != null && official.isNewer()) {
+                version = official.version;
+                kind = "official";
+            } else {
+                DebugBuildInfo debug = DebugBuildInfo.fetch();
+                if (debug == null || !debug.isNewer()) return Result.success();
+                version = debug.version;
+                kind = "debug";
+            }
             if (Build.VERSION.SDK_INT >= 33 &&
                 app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) return Result.success();
 
+            String notificationKey = kind + ":" + version;
             String last = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .getString("notification_version", "");
-            if (latest.version.equals(last)) return Result.success();
+            if (notificationKey.equals(last)) return Result.success();
 
             Intent launch = new Intent(app, MainActivity.class);
             launch.putExtra("hubnx_check_update", true);
@@ -77,8 +88,11 @@ public final class UpdateWorker extends Worker {
             PendingIntent tap = PendingIntent.getActivity(app, 0, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             Notification notification = new Notification.Builder(app, CHANNEL)
-                .setContentTitle("HubNX " + latest.version + " disponível")
-                .setContentText("Toque para atualizar o HubNX.")
+                .setContentTitle("HubNX " + version +
+                    ("debug".equals(kind) ? " — nova versão de teste" : " disponível"))
+                .setContentText("debug".equals(kind) ?
+                    "Toque para ver a compilação e fazer backup antes de instalar." :
+                    "Toque para atualizar o HubNX.")
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentIntent(tap)
                 .setAutoCancel(true)
@@ -89,7 +103,7 @@ public final class UpdateWorker extends Worker {
             if (manager != null) {
                 manager.notify(NOTIFY_ID, notification);
                 app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                    .edit().putString("notification_version", latest.version).apply();
+                    .edit().putString("notification_version", notificationKey).apply();
             }
             return Result.success();
         } catch (Exception error) {
