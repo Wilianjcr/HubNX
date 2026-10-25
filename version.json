@@ -1,11 +1,11 @@
 {
-  "version": "0.2.6",
+  "version": "0.2.7",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
-  "notes": "Android 0.2.6: controle de orientação Auto/Retrato/Paisagem em toda a aplicação, navegador integrado e atualização de teste; Switch: controle de layout Amplo/Compacto, NRO ainda não compilado.",
+  "notes": "Android 0.2.7: nova interface dark blue com biblioteca, cards, favoritos com estrelas e navegação inferior. Build de teste, sem Release oficial; Switch com UI remodelada e sem NRO validado.",
   "nro_available": false,
   "android_pwa_available": false,
   "android_apk_available": true,
-  "android_version": "0.2.6",
+  "android_version": "0.2.7",
   "switch_version": null,
   "android_release_published": false
 }
