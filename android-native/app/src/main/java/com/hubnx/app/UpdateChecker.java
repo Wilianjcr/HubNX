@@ -42,88 +42,45 @@ public final class UpdateChecker {
             activity.getSystemService(Context.DOWNLOAD_SERVICE);
     }
 
-    public void check(boolean userRequested) {
+    private boolean checking = false;
+    private long lastCheckTime = 0;
+    public synchronized void check(boolean userRequested) {
+        long now = System.currentTimeMillis();
+        if (checking || (!userRequested && now - lastCheckTime < 10L * 60 * 1000)) return;
+        checking = true;
+        lastCheckTime = now;
         new Thread(() -> {
             try {
-                HttpURLConnection conn = (HttpURLConnection)
-                    new URL(API).openConnection();
-                conn.setConnectTimeout(8000);
-                conn.setReadTimeout(10000);
-                conn.setRequestProperty("User-Agent", "HubNX-Android-Updater");
-                conn.setRequestProperty("Accept", "application/vnd.github+json");
-                int status = conn.getResponseCode();
-                if (status == 404) {
-                    conn.disconnect();
-                    reportNoUpdate(userRequested, "Ainda não há uma versão oficial publicada.");
+                ReleaseInfo latest = ReleaseInfo.fetch();
+                if (latest == null) {
+                    reportNoUpdate(userRequested, "Ainda não há uma Release Android assinada disponível.");
                     return;
                 }
-                if (status != 200) throw new IllegalStateException("GitHub HTTP " + status);
-                byte[] body;
-                try (InputStream in = conn.getInputStream();
-                     ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                    byte[] buf = new byte[4096];
-                    int n;
-                    while ((n = in.read(buf)) != -1) {
-                        out.write(buf, 0, n);
-                        if (out.size() > 200_000)
-                            throw new IllegalStateException("Resposta acima do limite.");
-                    }
-                    body = out.toByteArray();
-                } finally {
-                    conn.disconnect();
-                }
-
-                JSONObject release = new JSONObject(
-                    new String(body, java.nio.charset.StandardCharsets.UTF_8));
-                String tag = release.optString("tag_name");
-                if (!tag.matches("v[0-9]+\\.[0-9]+\\.[0-9]+"))
-                    throw new IllegalStateException("Tag da Release inválida.");
-                String version = tag.substring(1);
-                if (compareVersions(version, BuildConfig.VERSION_NAME) <= 0) {
-                    reportNoUpdate(userRequested, "Seu HubNX está atualizado ("
-                        + BuildConfig.VERSION_NAME + ").");
+                if (!latest.isNewer()) {
+                    reportNoUpdate(userRequested, "Seu HubNX está atualizado (" +
+                        BuildConfig.VERSION_NAME + ").");
                     return;
                 }
-
-                JSONArray assets = release.optJSONArray("assets");
-                if (assets == null) {
-                    reportNoUpdate(userRequested, "Há uma versão nova, mas sem APK disponível.");
-                    return;
-                }
-                String url = null;
-                for (int i = 0; i < assets.length(); i++) {
-                    JSONObject a = assets.getJSONObject(i);
-                    if (ASSET_NAME.equals(a.optString("name"))) {
-                        url = a.optString("browser_download_url");
-                        break;
-                    }
-                }
-                if (url == null || !url.equals(
-                    "https://github.com/Wilianjcr/HubNX/releases/download/"
-                    + tag + "/" + ASSET_NAME)) {
-                    reportNoUpdate(userRequested, "A versão nova ainda não tem APK válido.");
-                    return;
-                }
-                final String safeUrl = url;
                 activity.runOnUiThread(() -> {
                     if (activity.isFinishing() || activity.isDestroyed()) return;
                     new AlertDialog.Builder(activity)
-                        .setTitle("HubNX " + version + " disponível")
+                        .setTitle("HubNX " + latest.version + " disponível")
                         .setMessage("Versão instalada: " + BuildConfig.VERSION_NAME
-                            + "\nNova versão: " + version
-                            + "\n\nDeseja baixar o APK? O Android pedirá sua "
-                            + "confirmação antes de instalar.")
+                            + "\nNova versão: " + latest.version
+                            + "\n\nA atualização será baixada no próprio aplicativo. "
+                            + "O Android pedirá confirmação para instalar.")
                         .setNegativeButton("Depois", null)
-                        .setPositiveButton("Baixar atualização",
-                            (dialog, which) -> download(safeUrl, version))
+                        .setPositiveButton("Atualizar", (dialog, which) ->
+                            download(latest.downloadUrl, latest.version))
                         .show();
                 });
             } catch (Exception err) {
                 if (userRequested) reportNoUpdate(true,
-                    "Não foi possível verificar atualizações: "
-                    + err.getMessage());
+                    "Não foi possível verificar atualizações: " + err.getMessage());
+            } finally {
+                checking = false;
             }
-        }).start();
+        }, "hubnx-update").start();
     }
 
     private void reportNoUpdate(boolean show, String message) {
