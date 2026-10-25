@@ -34,3 +34,11 @@
 - Nenhum GitHub Pages público ativado.
 - APK fica em artifact privado, não em release pública.
 - Não incluir senhas, tokens nem chaves privadas em commits.
+
+## Correção do navegador integrado Android — 0.2.1
+- A antiga versão Android abria sites com `ACTION_VIEW` no navegador externo; isso foi substituído.
+- Há agora um WebView separado para os sites selecionados, dentro do app, com Início/Voltar/Avançar/Atualizar e barra de endereço.
+- Vídeo em tela cheia é solicitado pelo WebChromeClient; depende do player remoto.
+- A biblioteca continua no WebView local, isolado do conteúdo externo.
+- Netflix e outros serviços com DRM podem não funcionar em WebView.
+- O APK de correção está sendo produzido no GitHub Actions e requer teste real no Android.
