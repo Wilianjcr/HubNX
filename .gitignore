@@ -1,0 +1,13 @@
+*.log
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+node_modules/
+*.ext4
+*.nro
+*.nsp
+*.keys
+*.pem
+.DS_Store
