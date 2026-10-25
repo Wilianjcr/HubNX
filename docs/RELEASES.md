@@ -1,54 +1,37 @@
-# Releases públicas e atualizações HubNX
+# HubNX — atualização oficial (Android e Switch)
 
-## Status
+## Android 0.2.3 — verificação automática
 
-O repositório é público. A versão Android 0.2.2 inclui um verificador de Releases públicas no GitHub, mas não há ainda uma Release oficial assinada. O APK gerado por CI é debug e serve para testes, não para distribuição definitiva.
+O app confere uma Release pública ao abrir/retornar (intervalo local de 10 minutos para não sobrecarregar a API). Em segundo plano, WorkManager solicita uma checagem periódica a cada hora quando há rede: o sistema pode adiar conforme bateria, Doze e restrições. Quando encontra uma versão mais recente, mostra um diálogo no app ou uma notificação única para aquela versão. No Android 13+, autorize as notificações quando solicitado.
 
-## Assinatura Android: necessária para updates
+Ao escolher **Atualizar**, o HubNX inicia download do APK oficial. O Android exige que o usuário autorize a instalação; APK fora da loja não se instala silenciosamente. Se fechar o app durante download, abra o arquivo na pasta Downloads.
 
-O Android só aceita atualizar um aplicativo por cima da versão instalada quando a assinatura é a mesma. Para criar um APK oficial atualizável, gere no seu computador uma chave permanente, guarde em lugar seguro e configure estes quatro Repository secrets em GitHub > HubNX > Settings > Secrets and variables > Actions:
+A consulta usa GitHub Releases públicas; o simples version.json não atualiza binários e uma Release **não foi publicada ainda**.
 
-- HUBNX_SIGNING_KEYSTORE_B64: arquivo JKS convertido para Base64 (inteiro, sem caminho local).
-- HUBNX_SIGNING_STORE_PASSWORD: senha do keystore.
-- HUBNX_SIGNING_KEY_ALIAS: alias da chave, como hubnx-release.
-- HUBNX_SIGNING_KEY_PASSWORD: senha da chave.
+## Assinatura definitiva obrigatória
 
-Exemplo para gerar chave usando keytool no computador:
+Para futuras atualizações sobre a mesma instalação, todos os APKs oficiais precisam da mesma assinatura. Um APK debug baixado do CI não deve ser considerado versão final e pode ter assinatura diferente das Releases.
 
-    keytool -genkeypair -v -keystore hubnx-release.jks -storetype PKCS12 -keyalg RSA -keysize 3072 -validity 10000 -alias hubnx-release
+Para configurar assinatura sem expor credenciais em repositório público, em um computador Windows com **Java JDK 17** e **GitHub CLI (gh)**:
 
-NUNCA grave o arquivo JKS, suas senhas ou tokens nos arquivos do repositório, em issues ou em mensagens de chat. Faça backup seguro da chave: perdê-la impede updates das instalações assinadas com ela.
+1. Autentique o GitHub CLI via **gh auth login**.
+2. Baixe as fontes do repositório ou somente tools/setup-android-signing.ps1.
+3. No PowerShell, execute o script local, leia os avisos e configure os quatro GitHub secrets.
+4. Faça backup offline e seguro de hubnx-release.p12 e sua senha. **Nunca publique o arquivo ou as senhas no GitHub nem no chat.**
+5. Acesse [Actions — HubNX Android Release](https://github.com/Wilianjcr/HubNX/actions/workflows/release-android.yml) e selecione **Run workflow** na branch main para criar a primeira Release oficial assinada. A ação só publica se os quatro secrets de assinatura existirem e a compilação passar.
 
-## Publicar APK de Release
+O script cria/configura estes GitHub Actions secrets:
+- HUBNX_SIGNING_KEYSTORE_B64
+- HUBNX_SIGNING_STORE_PASSWORD
+- HUBNX_SIGNING_KEY_ALIAS
+- HUBNX_SIGNING_KEY_PASSWORD
 
-1. Confirme o versionName e versionCode em android-native/app/build.gradle.
-2. Configure todos os quatro secrets.
-3. Crie uma tag de versão, por exemplo v0.2.2, no commit aprovado e envie ao GitHub.
-4. O workflow .github/workflows/release-android.yml valida a tag, compila APK assinado e cria Release contendo HubNX-Android.apk e SHA256SUMS.txt.
-5. A instalação Android passará a verificar essa Release ao abrir; uma versão nova gera a opção Baixar atualização.
+O APK público terá nome HubNX-Android.apk, em Releases do GitHub. A assinatura é validada pelo Android ao instalar. Se já tiver instalado o APK debug, uma instalação sobreposta pode falhar. **Não desinstale a versão de testes com favoritos locais sem backup/sincronização validada.**
 
-O Android exige autorização do usuário para instalar o novo APK. Não há atualização silenciosa.
+## Switch
 
-## Migração de debug para Release
+A interface de Switch consulta version.json automaticamente ao iniciar e a cada hora; mostrará um aviso quando houver versão Switch nova com NRO disponível. Ainda **não existe NRO compilado nem instalador automático nativo**. Para cumprir o objetivo, faltam compilar o Chromium adaptado com devkitPro, testar no console e desenvolver instalador seguro que substitua o executável fora do processo, preservando perfis.
 
-O APK debug pode ter assinatura diferente do APK oficial. Nessa situação o Android não permite instalar um sobre o outro. Desinstalar o debug pode apagar favoritos locais; não faça isso sem backup ou sincronização conferida. Ainda falta uma exportação nativa de favoritos.
+## Privacidade
 
-Depois de instalar o primeiro APK assinado definitivo, os próximos APKs assinados com a MESMA chave poderão atualizar mantendo os dados, desde que a aplicação não altere de identificador e a instalação seja aceita.
-
-## Detalhes de funcionamento
-
-- Consulta automática: https://api.github.com/repos/Wilianjcr/HubNX/releases/latest ao abrir o app.
-- Só aceita tags no formato vMAJOR.MINOR.PATCH e o asset exato HubNX-Android.apk da própria Release.
-- Se a versão for mais recente, solicita confirmação para baixar.
-- Download via DownloadManager do Android, com notificação.
-- Ao concluir, com o HubNX aberto, oferece a instalação por meio do instalador do Android.
-- Se o app foi fechado, abrir manualmente o arquivo APK em Downloads.
-- A verificação manual também pode ser acionada na biblioteca.
-
-## Nintendo Switch
-
-Não há NRO compilado ou atualizador Switch pronto. Um updater seguro exige gerar a distribuição Chromium integrada, validar checksum/assinatura, substituir arquivos fora do processo e preservar favoritos e perfil. Não anunciar updates automáticos do Switch antes de testes no console.
-
-## version.json
-
-Este arquivo público é metadado de versões. Modificá-lo não cria uma Release nem instala APK. O atualizador nativo Android usa exclusivamente GitHub Releases.
+Não inclua dados privados no version.json nem em Releases públicas. Os favoritos e senhas de usuários não são enviados ao GitHub.
