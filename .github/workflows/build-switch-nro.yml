@@ -33,7 +33,7 @@ jobs:
           p = Path('chromium-nx/gx/docker/Dockerfile')
           s = p.read_text()
           old = 'chromium-headless-shell:arm64 chromium-shell:arm64 fonts-dejavu-core'
-          new = 'chromium-headless-shell:arm64 chromium-shell:arm64 chromium:arm64 libavcodec-dev libavutil-dev libswresample-dev fonts-dejavu-core'
+          new = 'chromium-headless-shell:arm64 chromium-shell:arm64 chromium:arm64 libavcodec-dev:arm64 libavutil-dev:arm64 libswresample-dev:arm64 fonts-dejavu-core'
           if old not in s:
               raise SystemExit('Dockerfile upstream mudou; revise dependências')
           p.write_text(s.replace(old,new,1))
@@ -41,6 +41,18 @@ jobs:
       - name: Montar ambiente Linux arm64 do Chromium NX
         run: |
           docker build -t hubnx-browser -f chromium-nx/gx/docker/Dockerfile chromium-nx/gx/docker
+      - name: Confirmar headers e bibliotecas arm64 antes do kernel
+        run: |
+          docker run --rm hubnx-browser bash -c '
+            test -s /usr/include/aarch64-linux-gnu/libavcodec/avcodec.h &&
+            test -s /usr/include/aarch64-linux-gnu/libavutil/avutil.h &&
+            test -s /usr/include/aarch64-linux-gnu/libswresample/swresample.h &&
+            aarch64-linux-gnu-gcc -x c -c -o /tmp/hubnx-ffmpeg-test.o - <<EOF
+          #include <libavcodec/avcodec.h>
+          #include <libavutil/avutil.h>
+          int main(void) { return LIBAVCODEC_VERSION_MAJOR; }
+          EOF
+          '
       - name: Inicializar containers de compilação
         run: |
           mkdir -p chromium-nx/gx/dist-nx
