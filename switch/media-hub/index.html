@@ -21,12 +21,17 @@ header{display:flex;align-items:center;justify-content:space-between;gap:15px;fl
 .note{background:#162638;border:1px solid var(--stroke);padding:13px 16px;border-radius:13px;color:#c6d6e7;margin:24px 0}.note.error{color:#ffd5d6;border-color:#804347}.note.success{color:#beffe8}.muted{color:var(--muted)}.empty{grid-column:1/-1;padding:34px;border:1px dashed var(--stroke);border-radius:16px;text-align:center;color:var(--muted)}
 dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;color:var(--text);width:min(460px,calc(100% - 32px));padding:27px}dialog::backdrop{background:#020812c9}dialog h2{margin:0 0 8px}dialog p{color:var(--muted);font-size:14px}label{display:block;margin:13px 0;color:#dae7f7;font-weight:650;font-size:14px}label input{display:block;width:100%;margin-top:7px;background:#0d1625;border:1px solid #52617a;border-radius:11px;padding:12px;color:white}.dialog-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:23px}#err,#authErr{color:#ffb8c2;min-height:1em}.update{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center}.update a{color:var(--accent)}footer{border-top:1px solid var(--stroke);padding:20px 0;color:var(--muted);font-size:13px;margin-top:38px}
 @media(max-width:860px){.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.toolbar{align-items:stretch;flex-direction:column}.card{min-height:160px}.card b{font-size:18px}.card small{font-size:11px}}@media(max-width:350px){.grid{grid-template-columns:1fr}}
+body.hubnx-compact main{width:min(560px,calc(100% - 30px));}
+body.hubnx-compact .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.hubnx-compact .toolbar{align-items:stretch;flex-direction:column}
+body.hubnx-compact .hero h1{font-size:32px;letter-spacing:-1px}
 </style>
 </head>
 <body><main>
 <header><div class="brand"><span class="logo" aria-hidden="true"><img src="./icon.svg" alt="" style="width:100%;height:100%;border-radius:15px"></span><span><strong>HubNX</strong><small>Android • Nintendo Switch</small></span></div><nav class="controls">
 <button class="btn" id="account" type="button">☁ Conta</button>
 <button class="btn" id="sync" type="button">↻ Sincronizar</button>
+<button class="btn" id="orientation" type="button" aria-label="Alternar formato do layout no Switch">▣ Tela: Ampla</button>
 <button class="btn" id="backup" type="button">⇄ Backup</button>
 <button class="btn primary" id="add" type="button">＋ Novo site</button></nav></header>
 <div class="note" id="status" role="status">Favoritos armazenados neste dispositivo. Entre na mesma conta nos dois aparelhos para sincronizar.</div>
@@ -69,6 +74,20 @@ dialog{border:1px solid var(--stroke);border-radius:20px;background:#1b2736;colo
 'use strict';
 const VERSION='0.2.0', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
 const $=id=>document.getElementById(id);
+const layoutKey='hubnx.switch.layout.v1';
+let compactLayout=localStorage.getItem(layoutKey)==='compact';
+function applyLayout(){
+ document.body.classList.toggle('hubnx-compact',compactLayout);
+ $('orientation').textContent=compactLayout?'▣ Tela: Compacta':'▣ Tela: Ampla';
+ $('orientation').setAttribute('aria-label',compactLayout?
+ 'Alternar para layout amplo':'Alternar para layout compacto');
+}
+$('orientation').onclick=()=>{
+ compactLayout=!compactLayout;
+ localStorage.setItem(layoutKey,compactLayout?'compact':'wide');
+ applyLayout();
+};
+applyLayout();
 function loadCloud(){try {const local=JSON.parse(localStorage.getItem('hubnx.firebase.web.v1')||'null');
 return local&&local.apiKey&&local.projectId ? local : (window.HUBNX_FIREBASE||{});
 }catch(e){return window.HUBNX_FIREBASE||{};}}
