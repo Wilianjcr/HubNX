@@ -8,7 +8,7 @@ on:
       - '.github/workflows/build-android-private.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,3 +53,35 @@ jobs:
           path: android-native/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
           if-no-files-found: error
+      - name: Publicar último build de teste (sem expor credenciais)
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILT_VERSION=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-native/app/build.gradle)
+          test -n "$BUILT_VERSION"
+          BUILT_SHA="$GITHUB_SHA"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B update-channel origin/main
+          MAIN_VERSION=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" android-native/app/build.gradle)
+          if [ "$MAIN_VERSION" != "$BUILT_VERSION" ]; then
+            echo "Main mudou de versão: não publicar manifesto antigo."
+            exit 0
+          fi
+          mkdir -p update
+          PREVIOUS=0
+          if [ -f update/android-debug.json ]; then
+            PREVIOUS=$(jq -r '.run_id // 0' update/android-debug.json)
+          fi
+          if [ "$PREVIOUS" -gt "$GITHUB_RUN_ID" ]; then
+            echo "Já existe uma compilação mais recente."
+            exit 0
+          fi
+          jq -n --arg version "$BUILT_VERSION" --arg run_url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg sha "$BUILT_SHA" --argjson run_id "$GITHUB_RUN_ID" \
+            '{channel:"debug",version:$version,run_id:$run_id,run_url:$run_url,source_sha:$sha,note:"APK de teste, assinatura não estável. Faça backup antes de instalar."}' > update/android-debug.json
+          git add update/android-debug.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "ci: apontar canal Android debug para build $GITHUB_RUN_ID [skip ci]"
+          git push origin HEAD:main
