@@ -1,0 +1,65 @@
+name: HubNX Switch - compilar NRO experimental
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'switch/**'
+      - 'branding/**'
+      - 'tools/prepare_chromium_nx.py'
+      - 'tools/render-nro-icon.py'
+      - '.github/workflows/build-switch-nro.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    steps:
+      - name: Obter fontes HubNX
+        uses: actions/checkout@v4
+      - name: Obter Chromium NX atualizado
+        run: git clone --depth 1 https://github.com/shodowlo/chromium-nx.git chromium-nx
+      - name: Aplicar HubNX e criar ícone exclusivo
+        run: |
+          python3 -m pip install --break-system-packages --user 'cairosvg>=2.7,<3' 'Pillow>=10,<13'
+          python3 tools/prepare_chromium_nx.py chromium-nx
+          python3 tools/render-nro-icon.py chromium-nx/media-hub/icon.jpg
+          test -s chromium-nx/media-hub/icon.jpg
+          bash -n chromium-nx/gx/build-chromium.sh
+          bash -n chromium-nx/gx/build-nx.sh
+      - name: Montar ambiente Linux arm64 do Chromium NX
+        run: |
+          docker build -t hubnx-browser -f chromium-nx/gx/docker/Dockerfile chromium-nx/gx/docker
+      - name: Inicializar containers de compilação
+        run: |
+          mkdir -p chromium-nx/gx/dist-nx
+          docker volume create hubnx-lklwork
+          docker run -d --name hubnx-linux -v "$PWD/chromium-nx:/project" -v hubnx-lklwork:/work hubnx-browser sleep infinity
+          docker run -d --name hubnx-devkit -v "$PWD/chromium-nx:/project" -v hubnx-lklwork:/work devkitpro/devkita64:latest sleep infinity
+          docker exec hubnx-devkit sh -c 'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y flex bison bc libelf-dev cpio rsync build-essential'
+          docker exec hubnx-linux sh -c 'git clone --depth 1 https://github.com/lkl/linux.git /work/linux'
+      - name: Compilar LKL para o ambiente PC
+        run: docker exec hubnx-linux bash /project/gx/build-lkl.sh
+      - name: Preparar runtime Chromium NX
+        run: docker exec hubnx-linux bash /project/gx/build-pc.sh
+      - name: Gerar navegador e imagens ext4
+        run: docker exec hubnx-linux bash /project/gx/build-chromium.sh
+      - name: Compilar NRO Nintendo Switch
+        run: docker exec hubnx-devkit bash /project/gx/build-nx.sh
+      - name: Validar distribuição HubNX
+        run: |
+          ls -lah chromium-nx/gx/dist-nx/switch/hubnx/
+          test -s chromium-nx/gx/dist-nx/switch/hubnx/hubnx.nro
+          test -s chromium-nx/gx/dist-nx/switch/hubnx/chromium-full.ext4
+          test -s chromium-nx/gx/dist-nx/switch/hubnx/profile.ext4.gz
+          test ! -e chromium-nx/gx/dist-nx/switch/hubnx/programs.txt
+      - name: Distribuição de teste (sem publicar Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: HubNX-Switch-NRO-experimental
+          path: chromium-nx/gx/dist-nx/switch/hubnx/
+          retention-days: 7
+          if-no-files-found: error
