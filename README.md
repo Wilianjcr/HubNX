@@ -6,7 +6,7 @@ O [HubNX](https://github.com/Wilianjcr/HubNX) é um projeto público em desenvol
 
 | Módulo | Situação |
 |---|---|
-| Android 0.2.4 | Código publicado; APK debug compilado pelo GitHub Actions; navegador integrado |
+| Android 0.2.5 | Código publicado; APK debug compilado pelo GitHub Actions; navegador integrado |
 | Atualizações Android | Verifica automaticamente ao abrir/retornar; WorkManager agenda consulta aproximadamente a cada hora; apresenta diálogo e notificação quando nova Release aparece |
 | Instalar atualizações | Baixa APK sob ação do usuário; Android requer confirmação de instalação |
 | Release oficial | Ainda não existe, falta assinatura permanente protegida por secrets do GitHub |
@@ -38,7 +38,7 @@ Leia [FIREBASE.md](docs/FIREBASE.md) para cadastrar projeto Authentication Email
 Não adicione keystores, senhas, tokens privados ou service accounts ao repositório. A Netflix e serviços com DRM podem bloquear o player em WebView ou homebrew experimental. Fique atento a sites desconhecidos.
 
 
-## Conta HubNX 0.2.4 — configuração no próprio app
+## Conta HubNX 0.2.5 — configuração no próprio app
 
 O botão Conta > Configurar sincronização permite informar a Web API Key e o Project ID de um projeto Firebase. Não é necessário recompilar o APK para configurar esses dados locais. O projeto Firestore/Auth ainda precisa existir e ter regras seguras habilitadas. Veja [ATIVAR-CONTA.md](docs/ATIVAR-CONTA.md).
 
@@ -53,3 +53,10 @@ O workflow [HubNX Switch — compilar NRO experimental](.github/workflows/build-
 ## Atualizar sem desinstalar
 
 No Android oficial, as versões novas devem ser assinadas com a MESMA chave permanente; o aplicativo consulta Releases e oferece o download, mas o Android requer confirmação do instalador. No Switch, o atalho deve continuar apontando a `sd:/switch/hubnx/hubnx.nro`, e futuras versões podem substituir o executável sem remover o forwarder e sem apagar o perfil. Atualização de arquivo NRO pelo próprio homebrew ainda necessita um updater nativo seguro.
+
+
+## Backup para migrar entre APKs de teste
+
+A partir de 0.2.5, a biblioteca apresenta o botão **Backup**. Copie o JSON de favoritos e guarde em local seguro. Em outra instalação do HubNX, abra Backup, cole o JSON e escolha Importar links; o app mescla URLs com a biblioteca existente sem apagá-la. Isso ajuda a migrar entre APK debug e Release com assinaturas diferentes sem perder os sites.
+
+Não exporte senhas pelo backup: o formato inclui apenas nomes e URLs de favoritos.
