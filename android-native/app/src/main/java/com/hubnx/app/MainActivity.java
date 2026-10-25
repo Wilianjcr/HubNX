@@ -1,6 +1,8 @@
 package com.hubnx.app;
 
 import android.app.Activity;
+import android.content.pm.ActivityInfo;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.os.Bundle;
 import android.graphics.Color;
@@ -30,6 +32,9 @@ public class MainActivity extends Activity {
     private static final int TEXT = Color.rgb(238, 247, 255);
 
     private UpdateChecker updater;
+    private String orientationMode = "auto";
+    private Button orientationToolbarButton;
+
     private final android.os.Handler checkHandler =
         new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable periodicCheck = new Runnable() {
@@ -51,6 +56,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
+        orientationMode = getSharedPreferences("hubnx_preferences", MODE_PRIVATE)
+            .getString("screen_orientation", "auto");
+        applyOrientation(orientationMode);
 
         assetLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -67,9 +75,17 @@ public class MainActivity extends Activity {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
             }
+            @Override public void onPageFinished(WebView view, String url) {
+                if (isLocalAsset(Uri.parse(url))) updateOrientationControls();
+            }
 
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                if ("hubnx".equalsIgnoreCase(uri.getScheme()) &&
+                    "orientation".equalsIgnoreCase(uri.getHost())) {
+                    applyOrientation(uri.getQueryParameter("mode"));
+                    return true;
+                }
                 if ("hubnx".equalsIgnoreCase(uri.getScheme()) &&
                     "updates".equalsIgnoreCase(uri.getHost())) {
                     updater.check(true);
@@ -110,6 +126,15 @@ public class MainActivity extends Activity {
         Button reload = button("⟳", toolbar);
         reload.setContentDescription("Recarregar site");
         reload.setOnClickListener(v -> browser.reload());
+
+        orientationToolbarButton = button("⤾", toolbar);
+        orientationToolbarButton.setContentDescription("Alternar orientação da tela");
+        orientationToolbarButton.setOnClickListener(v -> {
+            String next = "auto".equals(orientationMode) ? "portrait" :
+                ("portrait".equals(orientationMode) ? "landscape" : "auto");
+            applyOrientation(next);
+            toast("Orientação: " + orientationLabel());
+        });
 
         address = new EditText(this);
         address.setSingleLine(true);
@@ -188,6 +213,35 @@ public class MainActivity extends Activity {
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 55);
         }
+    }
+
+    private String orientationLabel() {
+        return "portrait".equals(orientationMode) ? "Retrato" :
+            ("landscape".equals(orientationMode) ? "Paisagem" : "Automático");
+    }
+
+    private void updateOrientationControls() {
+        if (orientationToolbarButton != null) {
+            orientationToolbarButton.setContentDescription(
+                "Orientação: " + orientationLabel() + ". Alternar");
+        }
+        if (library != null) {
+            String js = "if(window.hubnxSetOrientation){window.hubnxSetOrientation(" +
+                org.json.JSONObject.quote(orientationMode) + ");}";
+            library.evaluateJavascript(js, null);
+        }
+    }
+
+    private void applyOrientation(String mode) {
+        if (!"portrait".equals(mode) && !"landscape".equals(mode)) mode = "auto";
+        orientationMode = mode;
+        getSharedPreferences("hubnx_preferences", MODE_PRIVATE).edit()
+            .putString("screen_orientation", mode).apply();
+        int choice = "portrait".equals(mode) ? ActivityInfo.SCREEN_ORIENTATION_PORTRAIT :
+            ("landscape".equals(mode) ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE :
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        setRequestedOrientation(choice);
+        updateOrientationControls();
     }
 
     private void configureWebView(WebView view) {
