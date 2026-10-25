@@ -6,7 +6,7 @@ O [HubNX](https://github.com/Wilianjcr/HubNX) é um projeto público em desenvol
 
 | Módulo | Situação |
 |---|---|
-| Android 0.2.3 | Código publicado; APK debug compilado pelo GitHub Actions; navegador integrado |
+| Android 0.2.4 | Código publicado; APK debug compilado pelo GitHub Actions; navegador integrado |
 | Atualizações Android | Verifica automaticamente ao abrir/retornar; WorkManager agenda consulta aproximadamente a cada hora; apresenta diálogo e notificação quando nova Release aparece |
 | Instalar atualizações | Baixa APK sob ação do usuário; Android requer confirmação de instalação |
 | Release oficial | Ainda não existe, falta assinatura permanente protegida por secrets do GitHub |
@@ -36,3 +36,20 @@ Leia [FIREBASE.md](docs/FIREBASE.md) para cadastrar projeto Authentication Email
 ## Segurança e limitações
 
 Não adicione keystores, senhas, tokens privados ou service accounts ao repositório. A Netflix e serviços com DRM podem bloquear o player em WebView ou homebrew experimental. Fique atento a sites desconhecidos.
+
+
+## Conta HubNX 0.2.4 — configuração no próprio app
+
+O botão Conta > Configurar sincronização permite informar a Web API Key e o Project ID de um projeto Firebase. Não é necessário recompilar o APK para configurar esses dados locais. O projeto Firestore/Auth ainda precisa existir e ter regras seguras habilitadas. Veja [ATIVAR-CONTA.md](docs/ATIVAR-CONTA.md).
+
+## Ícone exclusivo
+
+O emblema oficial está em [branding/hubnx-icon.svg](branding/hubnx-icon.svg), aplicado à interface e ao ícone do launcher Android. A preparação do Switch renderiza esse símbolo para o ícone JPEG do NRO.
+
+## Compilação experimental Nintendo Switch
+
+O workflow [HubNX Switch — compilar NRO experimental](.github/workflows/build-switch-nro.yml) configura Docker e devkitPro para tentar produzir a distribuição completa. O workflow [validar adaptação](.github/workflows/check-switch.yml) já confere a estrutura do código, mas não gera executável. **Só instalar quando o build gerar os arquivos e forem validados em testes físicos.** O script de atualização do Chromium NX preserva a biblioteca integrada, mas vídeo/DRM ainda dependem do motor experimental.
+
+## Atualizar sem desinstalar
+
+No Android oficial, as versões novas devem ser assinadas com a MESMA chave permanente; o aplicativo consulta Releases e oferece o download, mas o Android requer confirmação do instalador. No Switch, o atalho deve continuar apontando a `sd:/switch/hubnx/hubnx.nro`, e futuras versões podem substituir o executável sem remover o forwarder e sem apagar o perfil. Atualização de arquivo NRO pelo próprio homebrew ainda necessita um updater nativo seguro.
