@@ -2,52 +2,270 @@ package com.hubnx.app;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.text.InputType;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
-    private WebView web;
-    private WebViewAssetLoader loader;
     private static final String HOME = "https://appassets.androidplatform.net/assets/index.html";
-    @Override public void onCreate(Bundle state) {
-        super.onCreate(state);
-        getWindow().setStatusBarColor(Color.rgb(12,17,28));
-        getWindow().setNavigationBarColor(Color.rgb(12,17,28));
-        loader = new WebViewAssetLoader.Builder().addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
-        web = new WebView(this);
-        web.setBackgroundColor(Color.rgb(12,17,28));
-        web.getSettings().setJavaScriptEnabled(true);
-        web.getSettings().setDomStorageEnabled(true);
-        web.getSettings().setAllowFileAccess(false);
-        web.getSettings().setAllowContentAccess(false);
-        web.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        web.setWebViewClient(new WebViewClient() {
+    private static final int BG = Color.rgb(12, 17, 28);
+    private static final int PANEL = Color.rgb(24, 36, 51);
+    private static final int TEXT = Color.rgb(238, 247, 255);
+
+    private WebView library;
+    private WebView browser;
+    private WebViewAssetLoader assetLoader;
+    private FrameLayout root;
+    private LinearLayout browserShell;
+    private EditText address;
+    private View fullScreenView;
+    private WebChromeClient.CustomViewCallback fullScreenCallback;
+
+    @Override public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().setStatusBarColor(BG);
+        getWindow().setNavigationBarColor(BG);
+
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
+
+        root = new FrameLayout(this);
+        root.setBackgroundColor(BG);
+        library = new WebView(this);
+        configureWebView(library);
+        library.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return loader.shouldInterceptRequest(request.getUrl());
+                return assetLoader.shouldInterceptRequest(request.getUrl());
             }
+
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                Uri url = request.getUrl();
-                if ("appassets.androidplatform.net".equals(url.getHost())) return false;
-                String scheme = url.getScheme();
-                if ("https".equals(scheme) || "http".equals(scheme)) {
-                    try { startActivity(new Intent(Intent.ACTION_VIEW, url)); } catch (Exception ignored) {}
-                }
+                Uri uri = request.getUrl();
+                if (isLocalAsset(uri)) return false;
+                if (isWeb(uri)) openSite(uri.toString());
+                else toast("Endereço não suportado no HubNX");
                 return true;
             }
         });
-        setContentView(web);
-        web.loadUrl(HOME);
+
+        browserShell = new LinearLayout(this);
+        browserShell.setOrientation(LinearLayout.VERTICAL);
+        browserShell.setBackgroundColor(BG);
+
+        LinearLayout toolbar = new LinearLayout(this);
+        toolbar.setOrientation(LinearLayout.HORIZONTAL);
+        toolbar.setGravity(Gravity.CENTER_VERTICAL);
+        toolbar.setPadding(dp(4), dp(4), dp(4), dp(4));
+        toolbar.setBackgroundColor(PANEL);
+
+        Button home = button("⌂", toolbar);
+        home.setContentDescription("Voltar à biblioteca");
+        home.setOnClickListener(v -> returnToLibrary());
+
+        Button back = button("‹", toolbar);
+        back.setContentDescription("Voltar uma página");
+        back.setOnClickListener(v -> {
+            if (browser.canGoBack()) browser.goBack();
+            else returnToLibrary();
+        });
+
+        Button forward = button("›", toolbar);
+        forward.setContentDescription("Avançar uma página");
+        forward.setOnClickListener(v -> { if (browser.canGoForward()) browser.goForward(); });
+
+        Button reload = button("⟳", toolbar);
+        reload.setContentDescription("Recarregar site");
+        reload.setOnClickListener(v -> browser.reload());
+
+        address = new EditText(this);
+        address.setSingleLine(true);
+        address.setTextColor(TEXT);
+        address.setTextSize(12);
+        address.setSelectAllOnFocus(true);
+        address.setHint("https://...");
+        address.setHintTextColor(Color.LTGRAY);
+        address.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        toolbar.addView(address, new LinearLayout.LayoutParams(0, dp(46), 1f));
+        address.setOnEditorActionListener((v, actionId, event) -> {
+            navigateFromAddress();
+            return true;
+        });
+        Button go = button("Ir", toolbar);
+        go.setContentDescription("Abrir endereço");
+        go.setOnClickListener(v -> navigateFromAddress());
+
+        browser = new WebView(this);
+        configureWebView(browser);
+        // A lista local e os sites remotos ficam em WebViews SEPARADAS,
+        // sem ponte JavaScript, acesso a arquivos ou credenciais compartilhadas.
+        browser.getSettings().setMediaPlaybackRequiresUserGesture(false);
+        browser.getSettings().setSupportMultipleWindows(false);
+        browser.getSettings().setJavaScriptCanOpenWindowsAutomatically(false);
+        browser.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (isWeb(request.getUrl())) return false;
+                toast("Link externo não suportado neste navegador");
+                return true;
+            }
+
+            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                address.setText(url);
+            }
+
+            @Override public void onPageFinished(WebView view, String url) {
+                address.setText(url);
+            }
+        });
+        browser.setWebChromeClient(new WebChromeClient() {
+            @Override public void onShowCustomView(View view, CustomViewCallback callback) {
+                if (fullScreenView != null) {
+                    callback.onCustomViewHidden();
+                    return;
+                }
+                fullScreenView = view;
+                fullScreenCallback = callback;
+                browserShell.setVisibility(View.GONE);
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                root.addView(fullScreenView, lp);
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
+
+            @Override public void onHideCustomView() {
+                exitFullScreen();
+            }
+        });
+
+        browserShell.addView(toolbar,
+            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)));
+        browserShell.addView(browser,
+            new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        root.addView(library,
+            new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(browserShell,
+            new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        browserShell.setVisibility(View.GONE);
+        setContentView(root);
+        library.loadUrl(HOME);
     }
+
+    private void configureWebView(WebView view) {
+        view.setBackgroundColor(BG);
+        WebSettings settings = view.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(false);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        settings.setSupportZoom(false);
+    }
+
+    private boolean isWeb(Uri uri) {
+        String scheme = uri.getScheme();
+        return ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))
+            && uri.getHost() != null && !uri.getHost().isEmpty();
+    }
+
+    private boolean isLocalAsset(Uri uri) {
+        return "https".equalsIgnoreCase(uri.getScheme())
+            && "appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())
+            && uri.getPath() != null && uri.getPath().startsWith("/assets/");
+    }
+
+    private void openSite(String url) {
+        Uri uri = Uri.parse(url);
+        if (!isWeb(uri)) { toast("Endereço inválido"); return; }
+        if ("http".equalsIgnoreCase(uri.getScheme())) {
+            toast("Este site usa HTTP sem criptografia. Prefira HTTPS.");
+        }
+        browserShell.setVisibility(View.VISIBLE);
+        library.setVisibility(View.GONE);
+        address.setText(url);
+        browser.loadUrl(url);
+    }
+
+    private void navigateFromAddress() {
+        String value = address.getText().toString().trim();
+        if (!value.contains("://")) value = "https://" + value;
+        Uri uri = Uri.parse(value);
+        if (!isWeb(uri) || uri.getUserInfo() != null) {
+            toast("Informe um endereço HTTP ou HTTPS válido");
+            return;
+        }
+        openSite(value);
+        address.clearFocus();
+    }
+
+    private void returnToLibrary() {
+        if (fullScreenView != null) exitFullScreen();
+        browserShell.setVisibility(View.GONE);
+        library.setVisibility(View.VISIBLE);
+        browser.loadUrl("about:blank");
+    }
+
+    private void exitFullScreen() {
+        if (fullScreenView == null) return;
+        root.removeView(fullScreenView);
+        fullScreenView = null;
+        browserShell.setVisibility(View.VISIBLE);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        WebChromeClient.CustomViewCallback callback = fullScreenCallback;
+        fullScreenCallback = null;
+        if (callback != null) callback.onCustomViewHidden();
+    }
+
+    private Button button(String label, LinearLayout parent) {
+        Button b = new Button(this);
+        b.setAllCaps(false);
+        b.setText(label);
+        b.setTextColor(TEXT);
+        b.setTextSize(18);
+        b.setBackgroundColor(Color.TRANSPARENT);
+        b.setMinWidth(0);
+        b.setMinimumWidth(0);
+        b.setPadding(dp(2), 0, dp(2), 0);
+        parent.addView(b, new LinearLayout.LayoutParams(dp(label.equals("Ir") ? 40 : 36), dp(45)));
+        return b;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private void toast(String s) {
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+    }
+
     @Override public void onBackPressed() {
-        if (web != null && web.canGoBack()) web.goBack(); else super.onBackPressed();
+        if (fullScreenView != null) exitFullScreen();
+        else if (browserShell.getVisibility() == View.VISIBLE) {
+            if (browser.canGoBack()) browser.goBack();
+            else returnToLibrary();
+        } else if (library.canGoBack()) library.goBack();
+        else super.onBackPressed();
     }
+
     @Override protected void onDestroy() {
-        if(web!=null){web.destroy();web=null;}super.onDestroy();
+        if (fullScreenView != null) exitFullScreen();
+        if (library != null) { library.destroy(); library = null; }
+        if (browser != null) { browser.destroy(); browser = null; }
+        super.onDestroy();
     }
 }
