@@ -30,6 +30,14 @@ public class MainActivity extends Activity {
     private static final int TEXT = Color.rgb(238, 247, 255);
 
     private UpdateChecker updater;
+    private final android.os.Handler checkHandler =
+        new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable periodicCheck = new Runnable() {
+        @Override public void run() {
+            if (updater != null) updater.check(false);
+            checkHandler.postDelayed(this, 15L * 60 * 1000);
+        }
+    };
     private WebView library;
     private WebView browser;
     private WebViewAssetLoader assetLoader;
@@ -281,6 +289,13 @@ public class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         if (updater != null) updater.check(false);
+        checkHandler.removeCallbacks(periodicCheck);
+        checkHandler.postDelayed(periodicCheck, 15L * 60 * 1000);
+    }
+
+    @Override protected void onPause() {
+        checkHandler.removeCallbacks(periodicCheck);
+        super.onPause();
     }
 
     @Override protected void onNewIntent(Intent intent) {
@@ -291,6 +306,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        checkHandler.removeCallbacks(periodicCheck);
         if (fullScreenView != null) exitFullScreen();
         if (updater != null) updater.release();
         if (library != null) { library.destroy(); library = null; }
