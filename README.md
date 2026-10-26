@@ -6,12 +6,17 @@ O [HubNX](https://github.com/Wilianjcr/HubNX) é um projeto público em desenvol
 
 | Módulo | Situação |
 |---|---|
-| Android 0.2.6 | Código publicado; APK debug compilado pelo GitHub Actions; navegador integrado |
+| Android 0.2.10 | APK compilado; consulta de atualização mais resistente a falha de DNS |
 | Atualizações Android | Verifica automaticamente ao abrir/retornar; WorkManager agenda consulta aproximadamente a cada hora; apresenta diálogo e notificação quando nova Release aparece |
 | Instalar atualizações | Baixa APK sob ação do usuário; Android requer confirmação de instalação |
 | Release oficial | Ainda não existe, falta assinatura permanente protegida por secrets do GitHub |
-| Nintendo Switch | Interface e adaptação Chromium NX, mas ainda sem compilação do arquivo `.nro` |
+| Nintendo Switch 0.2.0 | Pré-versão pública com `.nro` compilado; teste físico pendente |
 | Sincronização favoritos | Código Firebase preparado; exige ativação de um projeto e teste de dois dispositivos |
+
+## Downloads de 25/10/2026
+
+- [Switch 0.2.0 (pré-versão experimental)](https://github.com/Wilianjcr/HubNX/releases/tag/switch-v0.2.0) — ZIP público com `.nro` e arquivos necessários; ainda sem validação em console real.
+- [Android 0.2.10 (APK pelo GitHub Actions)](https://github.com/Wilianjcr/HubNX/actions/runs/40249429210) — artifact `HubNX-Android-debug`; instalar após fazer backup dos favoritos quando houver assinatura diferente.
 
 ## Instalar Android de testes
 
@@ -27,7 +32,7 @@ O aplicativo Android consulta [GitHub Releases](https://github.com/Wilianjcr/Hub
 
 ## Switch
 
-Não há ainda um `.nro` compilado. O script `tools/prepare_chromium_nx.py` prepara alterações experimentais nas fontes de [Chromium NX](https://github.com/shodowlo/chromium-nx) que requerem toolchain Docker/devkitPro e teste físico. O conteúdo da interface de Switch inclui a verificação de manifesto público ao iniciar, mas **não possui instalador automático de NRO**.
+Há uma pré-versão experimental `.nro` publicada, mas sem testes físicos concluídos. O script `tools/prepare_chromium_nx.py` prepara alterações experimentais nas fontes de [Chromium NX](https://github.com/shodowlo/chromium-nx) que requerem toolchain Docker/devkitPro e teste físico. O conteúdo da interface de Switch inclui a verificação de manifesto público ao iniciar, mas **não possui instalador automático de NRO**.
 
 ## Firebase
 
