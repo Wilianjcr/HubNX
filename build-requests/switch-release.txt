@@ -1,0 +1,5 @@
+HubNX Switch experimental 0.2.0 — solicitar publicação pública.
+Fonte verificada: GitHub Actions run 40234301676 (concluído com sucesso).
+Artifact: HubNX-Switch-NRO-experimental, ID 12614588518.
+Publicar somente se hubnx.nro, chromium-full.ext4 e profile.ext4.gz estiverem íntegros.
+Pré-versão sem validação em hardware real; preservar dados do microSD.
