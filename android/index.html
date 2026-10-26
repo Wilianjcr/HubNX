@@ -368,38 +368,47 @@ async function checkReleaseBanner(manual=false){
    location.href='hubnx://updates';return;
  }
  const btn=$('updateBtn');if(manual)btn.disabled=true;
+ let checked=0,latest=null;
  try{
-   let latest=null;
-   const official=await fetch(releaseApi,{cache:'no-store'});
-   if(official.ok){
-     const rel=await official.json(),tag=rel.tag_name||'';
+   // Cada serviço é consultado separadamente. Uma falha de DNS em
+   // api.github.com não impede a tentativa em raw.githubusercontent.com.
+   let official=null;
+   try{
+     const response=await fetch(releaseApi,{cache:'no-store'});
+     if(response.ok){official=await response.json();checked++;}
+     else if(response.status===404)checked++;
+   }catch(_error){}
+   if(official){
+     const tag=official.tag_name||'';
      if(/^v\d+\.\d+\.\d+$/.test(tag)){
-       const v=tag.substring(1),url='https://github.com/Wilianjcr/HubNX/releases/latest';
-       if((rel.assets||[]).some(x=>x.name==='HubNX-Android.apk')&&newerVersion(v,VERSION)){
-         latest={version:v,channel:'official',url};
-       }
+       const version=tag.slice(1);
+       if((official.assets||[]).some(a=>a.name==='HubNX-Android.apk')&&newerVersion(version,VERSION))
+         latest={version,channel:'official',url:'https://github.com/Wilianjcr/HubNX/releases/latest'};
      }
-   } else if(official.status!==404)throw Error('Releases HTTP '+official.status);
-   if(!latest){
-     const r=await fetch(debugManifest+'?t='+Date.now(),{cache:'no-store'});
-     if(r.ok){
-       const dbg=await r.json();
-       if(dbg.channel==='debug'&&/^\d+\.\d+\.\d+$/.test(dbg.version)&&
-          /^https:\/\/github\.com\/Wilianjcr\/HubNX\/actions\/runs\/\d+$/.test(dbg.run_url)&&
-          newerVersion(dbg.version,VERSION)){
-          latest={version:dbg.version,channel:'debug',url:dbg.run_url};
-       }
-     }else if(r.status!==404)throw Error('Canal de testes HTTP '+r.status);
    }
-   if(latest)showUpdate(latest.version,latest.channel,latest.url);
+   if(!latest){
+     try{
+       const response=await fetch(debugManifest+'?t='+Date.now(),{cache:'no-store'});
+       if(response.ok){
+         checked++;
+         const dbg=await response.json();
+         if(dbg.channel==='debug'&&/^\d+\.\d+\.\d+$/.test(dbg.version)&&
+            /^https:\/\/github\.com\/Wilianjcr\/HubNX\/actions\/runs\/\d+$/.test(dbg.run_url)&&
+            newerVersion(dbg.version,VERSION)){
+           latest={version:dbg.version,channel:'debug',url:dbg.run_url};
+         }
+       } else if(response.status===404)checked++;
+     }catch(_error){}
+   }
+   if(latest){showUpdate(latest.version,latest.channel,latest.url);}
    else{
      updateTarget=null;
      $('update').style.borderColor='';
-     $('updateText').textContent='HubNX '+VERSION+' • Nenhuma versão mais recente disponível.';
+     $('updateText').textContent=checked?
+       'HubNX '+VERSION+' • Nenhuma versão mais recente disponível.':
+       'Atualizações indisponíveis no momento. Sua biblioteca continua funcionando.';
      btn.textContent='Verificar versão';
    }
- }catch(e){
-   if(manual)$('updateText').textContent='Não foi possível consultar o servidor de atualizações.';
  }finally{if(manual)btn.disabled=false;}
 }
 $('updateBtn').onclick=()=>{
