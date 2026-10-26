@@ -60,15 +60,25 @@ public final class UpdateWorker extends Worker {
     @Override public Result doWork() {
         Context app = getApplicationContext();
         try {
-            ReleaseInfo official = ReleaseInfo.fetch();
+            ReleaseInfo official = null;
+            DebugBuildInfo debug = null;
+            boolean officialFailed = false;
+            boolean manifestFailed = false;
+            // Queda da API do GitHub não impede consultar o manifesto público.
+            try { official = ReleaseInfo.fetch(); }
+            catch (Exception ex) { officialFailed = true; }
             String version;
             String kind;
             if (official != null && official.isNewer()) {
                 version = official.version;
                 kind = "official";
             } else {
-                DebugBuildInfo debug = DebugBuildInfo.fetch();
-                if (debug == null || !debug.isNewer()) return Result.success();
+                try { debug = DebugBuildInfo.fetch(); }
+                catch (Exception ex) { manifestFailed = true; }
+                if (debug == null || !debug.isNewer()) {
+                    return (officialFailed && manifestFailed)
+                        ? Result.retry() : Result.success();
+                }
                 version = debug.version;
                 kind = "debug";
             }
@@ -88,11 +98,10 @@ public final class UpdateWorker extends Worker {
             PendingIntent tap = PendingIntent.getActivity(app, 0, launch,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             Notification notification = new Notification.Builder(app, CHANNEL)
-                .setContentTitle("HubNX " + version +
-                    ("debug".equals(kind) ? " — nova versão de teste" : " disponível"))
-                .setContentText("debug".equals(kind) ?
-                    "Toque para ver a compilação e fazer backup antes de instalar." :
-                    "Toque para atualizar o HubNX.")
+                .setContentTitle("Nova versão do HubNX disponível")
+                .setContentText("HubNX " + version +
+                    ("debug".equals(kind) ? " — consulte as novidades e faça backup." :
+                        " — toque para atualizar."))
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setContentIntent(tap)
                 .setAutoCancel(true)
