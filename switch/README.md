@@ -14,7 +14,7 @@ Existem duas ações GitHub:
 
 Acesse [GitHub Actions](https://github.com/Wilianjcr/HubNX/actions/workflows/build-switch-nro.yml), escolha **Run workflow**, selecione a branch main. Se a execução terminar com sucesso, baixe o artifact `HubNX-Switch-NRO-experimental`.
 
-O pacote esperado contém `hubnx.nro`, `chromium-full.ext4` e `profile.ext4.gz`. Antes de instalar, verifique que os três arquivos estão presentes. Não existe uma Release Switch oficial nem garantia de funcionamento até testes físicos.
+O pacote esperado contém `hubnx.nro`, `chromium-full.ext4` e `profile.ext4.gz`. Antes de instalar, verifique que os três arquivos estão presentes. Existe uma pré-versão pública experimental 0.2.0, mas nenhuma garantia de funcionamento até testes físicos.
 
 ## Instalação do pacote compilado
 1. Extraia a pasta `hubnx` no cartão SD: `sd:/switch/hubnx/`.
@@ -23,7 +23,7 @@ O pacote esperado contém `hubnx.nro`, `chromium-full.ext4` e `profile.ext4.gz`.
 4. O Chromium integrado deverá abrir diretamente a biblioteca local `file:///usr/share/gx/hubnx/index.html` na própria janela. Nenhum navegador externo deve ser aberto.
 
 ## Atualizações
-A interface consulta `version.json` ao abrir e periodicamente, exibindo aviso de versão Switch nova quando existir `switch_version` e `nro_available: true`. Atualmente não existe `.nro` liberado nem instalador autoexecutável do Switch.
+A interface consulta `version.json` ao abrir e periodicamente, exibindo aviso de versão Switch nova quando existir `switch_version` e `nro_available: true`. Existe um `.nro` experimental liberado para instalação manual; ainda não existe instalador autoexecutável do Switch.
 
 Quando uma nova distribuição for publicada, **não desinstale o forwarder nem exclua `sd:/switch/hubnx`**. Será suficiente substituir os binários `hubnx.nro` e `chromium-full.ext4` mantendo o mesmo caminho, e preservar `profile.ext4` se já existir (ele contém dados do navegador). Substitua arquivos só com o programa fechado. O automatismo desse processo ainda precisa ser testado e implementado.
 
@@ -41,3 +41,11 @@ O cadastro local existe. A opção **Conta > Configurar sincronização** permit
 ## Formato de tela no Switch
 
 O botão **▣ Tela: Ampla/Compacta** alterna o layout da biblioteca entre uma grade horizontal e uma grade mais estreita. O Nintendo Switch continua fisicamente em paisagem; o botão não gira o display do console. A escolha fica no armazenamento local do perfil do Chromium.
+
+
+## Download público do Switch 0.2.0
+
+- [Baixar pacote pré-release experimental](https://github.com/Wilianjcr/HubNX/releases/tag/switch-v0.2.0)
+- [Compilação GitHub Actions aprovada](https://github.com/Wilianjcr/HubNX/actions/runs/40234301676)
+- O arquivo contém `hubnx.nro`, `chromium-full.ext4` e `profile.ext4.gz`; copie a pasta `switch/hubnx` do ZIP para a raiz do microSD.
+- Pacote gerado e publicado com sucesso, mas ainda sem testes do aparelho físico. Não é uma versão estável; vídeos e sites podem falhar.
