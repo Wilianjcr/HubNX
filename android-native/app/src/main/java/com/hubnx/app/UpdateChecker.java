@@ -52,65 +52,74 @@ public final class UpdateChecker {
         lastCheckTime=now;
         new Thread(()->{
             try {
-                // Stable, signed Releases have priority and can be installed on top
-                // of an existing installation signed with the same key.
-                ReleaseInfo official=ReleaseInfo.fetch();
-                if(official!=null&&official.isNewer()){
+                // As fontes são independentes: falha de DNS na API não bloqueia
+                // o manifesto público alternativo de novas compilações.
+                ReleaseInfo official = null;
+                Exception officialError = null;
+                try { official = ReleaseInfo.fetch(); }
+                catch (Exception e) { officialError = e; }
+
+                if (official != null && official.isNewer()) {
+                    final ReleaseInfo release = official;
                     activity.runOnUiThread(()->{
                         if(activity.isFinishing()||activity.isDestroyed())return;
                         new AlertDialog.Builder(activity)
-                            .setTitle("HubNX "+official.version+" disponível")
-                            .setMessage("Uma nova versão oficial está disponível.\n" +
-                                "Versão instalada: "+BuildConfig.VERSION_NAME+
-                                "\nNova versão: "+official.version+
-                                "\n\nBaixar e instalar pelo próprio HubNX? " +
-                                "O Android solicitará autorização para instalar.")
-                            .setNegativeButton("Depois",null)
-                            .setPositiveButton("Atualizar",
-                                (dialog,which)->download(official.downloadUrl,official.version))
+                            .setTitle("Nova versão disponível")
+                            .setMessage("Sua versão: "+BuildConfig.VERSION_NAME+
+                                "\nNova versão: "+release.version+
+                                "\n\nAtualização publicada no GitHub. "+
+                                "O Android solicitará sua autorização para instalar.")
+                            .setNegativeButton("Agora não",null)
+                            .setPositiveButton("Atualizar agora",
+                                (dialog,which)->download(release.downloadUrl,release.version))
                             .show();
                     });
                     return;
                 }
 
-                DebugBuildInfo debug=DebugBuildInfo.fetch();
-                if(debug!=null&&debug.isNewer()){
+                DebugBuildInfo availableBuild = null;
+                Exception manifestError = null;
+                try { availableBuild = DebugBuildInfo.fetch(); }
+                catch (Exception e) { manifestError = e; }
+
+                if(availableBuild != null && availableBuild.isNewer()) {
+                    final DebugBuildInfo build = availableBuild;
                     android.content.SharedPreferences prefs=activity.getSharedPreferences(
                         "hubnx_updater",Context.MODE_PRIVATE);
                     String last=prefs.getString("last_debug_prompt","");
-                    if(userRequested||!debug.version.equals(last)){
-                        prefs.edit().putString("last_debug_prompt",debug.version).apply();
+                    if(userRequested||!build.version.equals(last)){
+                        prefs.edit().putString("last_debug_prompt",build.version).apply();
                         activity.runOnUiThread(()->{
                             if(activity.isFinishing()||activity.isDestroyed())return;
                             new AlertDialog.Builder(activity)
-                                .setTitle("HubNX "+debug.version+" — nova versão de teste")
-                                .setMessage("Versão instalada: "+BuildConfig.VERSION_NAME+
-                                    "\nVersão de teste disponível: "+debug.version+
-                                    "\n\nA versão está na seção Actions do GitHub. " +
-                                    "Como os APKs de teste podem ter assinaturas diferentes, " +
-                                    "a instalação por cima pode não funcionar. " +
-                                    "Faça backup dos favoritos antes de substituir o aplicativo.")
-                                .setNegativeButton("Depois",null)
-                                .setPositiveButton("Ver compilação",(d,w)->
-                                    ((MainActivity)activity).openUpdatePage(debug.pageUrl))
+                                .setTitle("Nova versão disponível")
+                                .setMessage("Sua versão: "+BuildConfig.VERSION_NAME+
+                                    "\nNova versão: "+build.version+
+                                    "\n\nNova compilação no GitHub Actions. "+
+                                    "Como a assinatura pode ser diferente, faça backup "+
+                                    "dos favoritos antes de substituir a instalação.")
+                                .setNegativeButton("Agora não",null)
+                                .setPositiveButton("Ver atualização",(d,w)->
+                                    ((MainActivity)activity).openUpdatePage(build.pageUrl))
                                 .show();
                         });
                     }
                     return;
                 }
                 if(userRequested){
-                    if(official==null)
-                        reportNoUpdate(true,"Ainda não há uma versão oficial assinada. "+
-                            "Também não encontrei uma compilação de teste mais recente "+
-                            "que a instalada ("+BuildConfig.VERSION_NAME+").");
-                    else
-                        reportNoUpdate(true,"Nenhuma atualização nova para a versão "+
-                            BuildConfig.VERSION_NAME+".");
+                    if(officialError!=null || manifestError!=null){
+                        reportNoUpdate(true,
+                            "Não foi possível consultar todas as fontes de atualização. "+
+                            "Verifique a internet, o DNS privado, a VPN ou o bloqueador de rede "+
+                            "e tente novamente. O HubNX pode continuar sendo usado normalmente.");
+                    } else {
+                        reportNoUpdate(true,"O HubNX "+BuildConfig.VERSION_NAME+
+                            " está atualizado em relação às versões publicadas.");
+                    }
                 }
-            }catch(Exception err){
-                if(userRequested)reportNoUpdate(true,
-                    "Falha ao verificar versões: "+err.getMessage());
-            }finally{checking=false;}
+            } finally {
+                checking=false;
+            }
         },"hubnx-update").start();
     }
 
