@@ -1,0 +1,82 @@
+name: HubNX Switch - publicar pacote experimental
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'build-requests/switch-release.txt'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Obter repositorio
+        uses: actions/checkout@v4
+      - name: Baixar NRO compilado pelo GitHub Actions
+        uses: actions/download-artifact@v4
+        with:
+          name: HubNX-Switch-NRO-experimental
+          run-id: 40234301676
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: downloaded
+      - name: Verificar pacote Switch e preparar SD
+        run: |
+          set -euo pipefail
+          test -s downloaded/hubnx.nro
+          test -s downloaded/chromium-full.ext4
+          test -s downloaded/profile.ext4.gz
+          test ! -e downloaded/programs.txt
+          mkdir -p package/switch/hubnx dist
+          cp -a downloaded/. package/switch/hubnx/
+          cat > package/LEIA-PRIMEIRO.txt <<'EOF'
+          HubNX Switch 0.2.0 - PRE-VERSAO EXPERIMENTAL
+          Nao testada em hardware real. Faca backup do microSD.
+          Copie a pasta switch/hubnx para a raiz do microSD.
+          No Sphaira, abra hubnx.nro com memoria plena ou crie
+          forwarder 39-bit. Preserve profile.ext4 quando atualizar
+          para nao perder favoritos e outros dados locais.
+          Sites com DRM (como Netflix) podem nao reproduzir videos.
+          Fontes: https://github.com/Wilianjcr/HubNX
+          Base Chromium NX: https://github.com/shodowlo/chromium-nx
+          EOF
+          (cd package && zip -q -r ../dist/HubNX-Switch-v0.2.0.zip .)
+          (cd dist && sha256sum HubNX-Switch-v0.2.0.zip > SHA256SUMS.txt)
+      - name: Publicar pre-release publica
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=switch-v0.2.0
+          NOTES='Primeira compilacao experimental do HubNX para Switch 1 desbloqueado. NRO compilado em GitHub Actions, mas NAO validado em console real. Copie a pasta switch/hubnx do ZIP para a raiz do microSD. Abra pelo Sphaira com memoria plena; para forwarder use 39-bit. Preserve profile.ext4 em futuras atualizacoes. Streaming pode falhar e DRM da Netflix nao e suportado. Base: Chromium NX; consulte o README e as licencas upstream.'
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/HubNX-Switch-v0.2.0.zip dist/SHA256SUMS.txt --clobber
+          else
+            gh release create "$TAG" dist/HubNX-Switch-v0.2.0.zip dist/SHA256SUMS.txt --target main --prerelease --title "HubNX Switch 0.2.0 - experimental" --notes "$NOTES"
+          fi
+      - name: Atualizar manifesto somente apos publicar
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git checkout -B switch-manifest origin/main
+            python3 - <<'PYCODE'
+          import json
+          from pathlib import Path
+          path=Path('version.json')
+          data=json.loads(path.read_text())
+          data['nro_available']=True
+          data['switch_version']='0.2.0'
+          data['switch_release_url']='https://github.com/Wilianjcr/HubNX/releases/tag/switch-v0.2.0'
+          path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
+          PYCODE
+            git add version.json
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m 'chore(switch): publicar pre-release experimental v0.2.0 [skip ci]'
+            if git push origin HEAD:main; then exit 0; fi
+          done
+          exit 1
