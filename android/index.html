@@ -155,7 +155,7 @@ body.hubnx-compact .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 <script>
 (function(){
 'use strict';
-const VERSION='0.2.9', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
+const VERSION='0.2.10', KEY='hubnx.links.2', SESSION='hubnx.session.2', DIRTY='hubnx.dirty.2';
 const $=id=>document.getElementById(id);
 const orientationKey='hubnx.orientation.v1';
 const orientationOptions=['auto','portrait','landscape'];
@@ -359,7 +359,7 @@ function newerVersion(a,b){
 function showUpdate(version,channel,url){
  updateTarget={version,channel,url};
  $('update').style.borderColor='#139dff';
- $('updateText').textContent='HubNX '+version+' disponível'+(channel==='debug'?' (versão de teste).':'!')+
+ $('updateText').textContent='HubNX '+version+' disponível'+'!'+
   ' Toque em Ver atualização.';
  $('updateBtn').textContent='Ver atualização';
 }
