@@ -2,10 +2,11 @@
   "version": "0.2.10",
   "release_url": "https://github.com/Wilianjcr/HubNX/releases",
   "notes": "Android 0.2.10: tratamento de falhas de DNS e consulta independente aos manifestos do GitHub; aviso de atualização claro e biblioteca acessível mesmo sem atualizações. Switch: compilação experimental disponível para validação.",
-  "nro_available": false,
+  "nro_available": true,
   "android_pwa_available": false,
   "android_apk_available": true,
   "android_version": "0.2.10",
-  "switch_version": null,
-  "android_release_published": false
+  "switch_version": "0.2.0",
+  "android_release_published": false,
+  "switch_release_url": "https://github.com/Wilianjcr/HubNX/releases/tag/switch-v0.2.0"
 }
